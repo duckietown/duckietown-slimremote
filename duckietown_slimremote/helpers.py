@@ -1,16 +1,18 @@
+import multiprocessing
 import random
 import sys
 import time
 import numpy as np
+from queue import Queue as ThreadQueue
+
 
 def get_py_version():
-
-
     return "running on Python {}.{}.{}".format(
         sys.version_info[0],
         sys.version_info[1],
         sys.version_info[2]
     )
+
 
 def select_action(actions, controllers):
     if len(actions) == 1:
@@ -50,10 +52,12 @@ def remove_inactive(logs, controllers, sockets_pub):
         if sock[0] not in u_ctrl:
             sockets_pub.remove(sock)
 
-def random_id():
-    return random.randrange(0,99999)
 
-def timer(timings, start, prefix = ""):
+def random_id():
+    return random.randrange(0, 99999)
+
+
+def timer(timings, start, prefix=""):
     diff = time.time() - start
     start = time.time()
     timings.append(diff)
@@ -66,4 +70,11 @@ def timer(timings, start, prefix = ""):
         ))
         timings = []
     return timings, start
+
+
+def get_right_queue(base):
+    if base is multiprocessing.context.Process:
+        return multiprocessing.Queue
+    else:
+        return ThreadQueue
 

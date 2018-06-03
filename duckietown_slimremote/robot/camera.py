@@ -1,13 +1,11 @@
-import multiprocessing
-import threading
 from multiprocessing import Process
 from threading import Thread
-from queue import Queue as ThreadQueue
 
 import cv2
 import numpy as np
 import zmq
 
+from duckietown_slimremote.helpers import get_right_queue
 from duckietown_slimremote.networking import make_pub_socket, send_array
 from duckietown_slimremote.robot.constants import CAM_FAILURE_COUNTER
 
@@ -91,10 +89,7 @@ def make_async_camera(base):
                 for pub in self.publisher_sockets:
                     send_array(pub, img)
 
-    if base is multiprocessing.context.Process:
-        queue = multiprocessing.Queue
-    else:
-        queue = ThreadQueue
+    queue = get_right_queue(base)
 
     return AsyncPubCamera, queue
 

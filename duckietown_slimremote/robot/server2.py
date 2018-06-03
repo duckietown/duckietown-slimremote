@@ -9,7 +9,7 @@ from duckietown_slimremote.robot.motors import FailsafeController
 # start subscriber sub
 
 cam = CameraController()
-# motors = FailsafeController()
+motors = FailsafeController()
 
 sock, poll = make_pull_socket()
 

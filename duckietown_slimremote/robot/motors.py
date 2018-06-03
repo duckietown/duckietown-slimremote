@@ -1,12 +1,13 @@
+from multiprocessing import Process
 from threading import Thread
 import time
 from Adafruit_MotorHAT import Adafruit_MotorHAT
 
+from duckietown_slimremote.helpers import get_right_queue
 from duckietown_slimremote.robot.constants import MOTOR_MAX_SPEED, DECELERATION_TIMEOUT, DECELERATION_BREAK_TIME, \
     DECELERATION_STEPS
 
 from queue import Queue
-
 
 
 def denormalize_speed(norm):
@@ -116,44 +117,55 @@ class Controller():
         self.list_action([0, 0])
 
 
-class ThreadedController(Thread):
-    def __init__(self, queue):
-        Thread.__init__(self)
-        self.queue = queue
-        self.robot = Controller()
-        self.last_action_time = time.time()
-        self.last_action = []
+def make_async_controller(base):
+    """ allows to instantiate the motor controller as thread or as process
 
-    def run(self):
-        keep_running = True
-        while keep_running:
-            if not self.queue.empty():
-                action = self.queue.get()
+    :param base: options are Thread|Process
+    :return:
+    """
 
-                if action == "quit":
-                    keep_running = False
-                    self.robot.list_action([0,0])
+    class AsyncController(base):
+        def __init__(self, queue):
+            super(AsyncController, self).__init__()
+            self.queue = queue
+            self.robot = Controller()
+            self.last_action_time = time.time()
+            self.last_action = []
+
+        def run(self):
+            keep_running = True
+            while keep_running:
+                if not self.queue.empty():
+                    action = self.queue.get()
+
+                    if action == "quit":
+                        keep_running = False
+                        self.robot.list_action([0, 0])
+                    else:
+                        self.robot.list_action(action)
+                        self.last_action_time = time.time()
+                        self.last_action = action
+                    self.queue.task_done()
+
                 else:
-                    self.robot.list_action(action)
-                    self.last_action_time = time.time()
-                    self.last_action = action
-                self.queue.task_done()
+                    delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
+                    if delta >= 0 and delta < DECELERATION_BREAK_TIME:
+                        # decelerate
+                        if len(self.last_action) == 2:
+                            new_action = ease_out_action(self.last_action, delta)
+                            self.robot.list_action(new_action)
 
-            else:
-                delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
-                if delta >= 0 and delta < DECELERATION_BREAK_TIME:
-                    # decelerate
-                    if len(self.last_action) == 2:
-                        new_action = ease_out_action(self.last_action, delta)
-                        self.robot.list_action(new_action)
+                            time.sleep(1 / DECELERATION_STEPS)
+                    elif delta >= DECELERATION_BREAK_TIME and len(self.last_action) == 2:
+                        # this is run only once after decel to
+                        # make sure the robot comes to a full stop
+                        # and doesn't continue to move at 0.00001 speed
+                        self.last_action = []
+                        self.robot.stop()
 
-                        time.sleep(1 / DECELERATION_STEPS)
-                elif delta >= DECELERATION_BREAK_TIME and len(self.last_action) == 2:
-                    # this is run only once after decel to
-                    # make sure the robot comes to a full stop
-                    # and doesn't continue to move at 0.00001 speed
-                    self.last_action = []
-                    self.robot.stop()
+    queue = get_right_queue(base)
+
+    return AsyncController, queue
 
 
 class FailsafeController():
@@ -164,8 +176,10 @@ class FailsafeController():
     '''
 
     def __init__(self):
-        self.queue = Queue()
-        self.ctrl = ThreadedController(self.queue)
+        ctrl_class, ctrl_queue = make_async_controller(Process)
+        self.queue = ctrl_queue()
+
+        self.ctrl = ctrl_class(self.queue)
         self.ctrl.daemon = True
         self.ctrl.start()
 
@@ -182,6 +196,7 @@ class FailsafeController():
 if __name__ == '__main__':
     # TEST
     import time
+
 
     def test_simple_control():
 
@@ -212,12 +227,13 @@ if __name__ == '__main__':
         print("done")
         ctrl.stop()
 
+
     def test_failsafe():
-        print ("testing failsafe mode")
+        print("testing failsafe mode")
 
         ctrl = FailsafeController()
         print("started robot, sending action, then sleeping for 1s")
-        ctrl.run((0.7,0.7))
+        ctrl.run((0.7, 0.7))
         time.sleep(2)
 
         print("robot should have halted by now...")
@@ -225,8 +241,8 @@ if __name__ == '__main__':
         print("sending constant motor commands to keep it going")
 
         for i in range(100):
-            ctrl.run((1,-1))
-            time.sleep(1/50)
+            ctrl.run((1, -1))
+            time.sleep(1 / 50)
 
         print("now decelerating")
         time.sleep(2)
@@ -235,13 +251,15 @@ if __name__ == '__main__':
               "so should decelerate ever so slightly")
 
         for i in range(3):
-            ctrl.run((-1,1))
+            ctrl.run((-1, 1))
             time.sleep(1.2)
 
-        print ("done")
+        print("done")
         ctrl.stop()
 
+
     test_failsafe()
+
 
     def stop():
         ctrl = Controller()
