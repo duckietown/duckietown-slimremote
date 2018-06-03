@@ -1,20 +1,15 @@
 from queue import Queue
 
 from duckietown_slimremote.networking import make_pull_socket, has_pull_message, receive_data
-from duckietown_slimremote.robot.camera import ThreadedPubCamera
+from duckietown_slimremote.robot.camera import CameraController
 
 # start camera thread
 # start motor thread
 # start subscriber sub
 
-cam_queue = Queue()
-cam = ThreadedPubCamera(cam_queue)
-cam.daemon = True # so that you can kill the thread
-cam.start()
+cam = CameraController()
 
 sock, poll = make_pull_socket()
-
-cam_subscribers = []
 
 # main loop, look for new incoming connections
 
@@ -26,7 +21,6 @@ while True:
         if not success:
             print(data)  # in error case, this will contain the err msg
             continue
-        if data["ip"] not in cam_subscribers:
-            cam_queue.put(data["ip"])
-            cam_subscribers.append(data["ip"])
+
+        cam.addSubscriber(data["ip"])
         print("received new connection:", data)

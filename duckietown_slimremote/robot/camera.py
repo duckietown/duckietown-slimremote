@@ -1,3 +1,4 @@
+from queue import Queue
 from threading import Thread
 
 import cv2
@@ -21,6 +22,7 @@ class Camera():
         # can be updated to 120Hz
         fps = min(60, fps)
         self.cap.set(5, fps)
+        print("camera running with {}x{} px at {}Hz".format(res[0], res[1], fps))
 
     def observe(self):
         ret = False
@@ -47,7 +49,7 @@ class ThreadedPubCamera(Thread):
         Thread.__init__(self)
         self.queue = queue
         self.publisher_sockets = []
-        self.cam = Camera(res=(160,128))
+        self.cam = Camera(res=(160, 128))
 
     def run(self):
         # look for new subscribers from queue
@@ -69,3 +71,18 @@ class ThreadedPubCamera(Thread):
 
             for pub in self.publisher_sockets:
                 send_array(pub, img)
+
+
+class CameraController():
+
+    def __init__(self) -> None:
+        self.cam_queue = Queue()
+        self.cam = ThreadedPubCamera(self.cam_queue)
+        self.cam.daemon = True  # so that you can kill the thread
+        self.cam.start()
+        self.cam_subscribers = []
+
+    def addSubscriber(self, ip):
+        if ip not in self.cam_subscribers:
+            self.cam_queue.put(ip)
+            self.cam_subscribers.append(ip)
