@@ -15,10 +15,11 @@ class Camera():
         # https://docs.opencv.org/2.4/modules/highgui/doc/reading_and_writing_images_and_video.html#videocapture-get
         self.cap.set(3, res[0])
         self.cap.set(4, res[1])
+        self.cap.set(21, 3)
 
         # framerate is capped to 90Hz on old PiCam firmware
         # can be updated to 120Hz
-        fps = min(90, fps)
+        fps = min(60, fps)
         self.cap.set(5, fps)
 
     def observe(self):
