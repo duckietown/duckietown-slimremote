@@ -1,5 +1,5 @@
 import time
-
+import matplotlib.pyplot as plt
 from duckietown_slimremote.helpers import random_id, timer
 from duckietown_slimremote.networking import get_ip, construct_action, make_push_socket
 from duckietown_slimremote.pc.camera import SubCameraMaster, cam_window_init, cam_window_update, \

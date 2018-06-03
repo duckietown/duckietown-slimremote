@@ -4,6 +4,8 @@ from queue import Queue, LifoQueue
 from threading import Thread
 import numpy as np
 import zmq
+import matplotlib
+matplotlib.use('TkAgg') #needed for tkinter GUI
 import matplotlib.pyplot as plt
 
 from duckietown_slimremote.helpers import timer

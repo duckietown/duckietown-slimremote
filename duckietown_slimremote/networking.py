@@ -6,6 +6,8 @@ import zmq
 
 import sys
 
+from duckietown_slimremote.helpers import random_id
+
 if sys.version_info > (3,):
     buffer = memoryview
 
@@ -92,8 +94,11 @@ def has_pull_message(socket_pull, poller, timeout=5):
         return False
 
 
-def make_push_socket(ip):
-    socket_push = context.socket(zmq.PUSH)
+def make_push_socket(ip, context_=None):
+    if context_ is None:
+        context_ = context
+
+    socket_push = context_.socket(zmq.PUSH)
     socket_push.connect("tcp://{}:5558".format(ip))
 
     return socket_push
@@ -169,7 +174,13 @@ def recv_array(socket, flags=0, copy=True, track=False):
     return A.reshape(md['shape'])
 
 
-def construct_action(id, ip, action=None):
+def construct_action(id, ip=None, action=None):
+    # if id is None:
+    #     id = random_id()
+
+    if ip is None:
+        ip = get_ip()
+
     if action is None:  # then it's a heartbeat
         return "1 {} {} 0".format(id, ip)
     else:

@@ -21,7 +21,7 @@ while True:
     msg = construct_action(own_id, own_ip, action)
     robot_sock.send_string(msg)
     timings, start = timer(timings, start, prefix="action")
-    time.sleep(0.01)
+    time.sleep(0.01) # not necessary anymore
 
 # msg = construct_action(own_id, own_ip, (0.5,-0.5))
 # robot_sock.send_string(msg)
