@@ -70,6 +70,32 @@ def make_pub_socket(ip, for_images=False):
     return socket_pub
 
 
+def make_pull_socket(with_poller=True):
+    socket_pull = context.socket(zmq.PULL)
+    socket_pull.bind("tcp://*:5558")
+    poller = None
+    if with_poller:
+        poller = zmq.Poller()
+        poller.register(socket_pull, zmq.POLLIN)
+
+    return (socket_pull, poller)
+
+
+def has_pull_message(socket_pull, poller, timeout=5):
+    socks = dict(poller.poll(timeout))
+    if socket_pull in socks and socks[socket_pull] == zmq.POLLIN:
+        return True
+    else:
+        return False
+
+
+def make_push_socket(ip):
+    socket_push = context.socket(zmq.PUSH)
+    socket_push.connect("tcp://{}:5558".format(ip))
+
+    return socket_push
+
+
 def receive_data(socket_sub):
     data = socket_sub.recv_string()
     split = data.split(" ")
@@ -108,7 +134,7 @@ def receive_data(socket_sub):
                        "0.5111,-0.7".format(msg)
                 return False, data
 
-    return True, (topic, id, ip, msg)
+    return True, {"topic": topic, "id": id, "ip": ip, "msg": msg}
 
 
 def say_hi(socket_pub):
@@ -163,6 +189,7 @@ class ThreadedActionSubscriber(Thread):
                 continue
             self.queue.put(data)
 
+
 class ThreadedImageSubscriber(Thread):
     def __init__(self, queue):
         Thread.__init__(self)
@@ -184,6 +211,7 @@ def start_thread_w_queue(threadName):
     sub_thread.daemon = True  # so that program can exist without waiting for thread
     sub_thread.start()
     return queue  # this is all we care about
+
 
 def get_last_queue_element(queue):
     out = queue.get(block=True)

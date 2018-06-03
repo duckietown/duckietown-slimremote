@@ -18,7 +18,7 @@ install_requires = [
 
 if IS_RPI:
     install_requires.append('Adafruit-MotorHAT')  # for controlling the motors
-    install_requires.append('cv2')  # for high speed image capturing
+    # install_requires.append('cv2')  # for high speed image capturing # this has to be compiled by hand on the rpi
 
 setup(
     name='duckietown_slimremote',
@@ -26,6 +26,7 @@ setup(
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
+            'duckietown-start-robot2=duckietown_slimremote.robot.server2:main',
             'duckietown-start-robot=duckietown_slimremote.robot.server:main',
             'duckietown-stop-robot=duckietown_slimremote.robot.server:stop'
         ],

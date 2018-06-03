@@ -1,5 +1,7 @@
 import random
 import sys
+import time
+import numpy as np
 
 def get_py_version():
 
@@ -50,3 +52,18 @@ def remove_inactive(logs, controllers, sockets_pub):
 
 def random_id():
     return random.randrange(0,99999)
+
+def timer(timings, start, prefix = ""):
+    diff = time.time() - start
+    start = time.time()
+    timings.append(diff)
+    if len(timings) == 100:
+        mean_diff = np.mean(timings)
+        print("avg {}frame time: {}s = {}Hz".format(
+            prefix,
+            np.around(mean_diff, 4),
+            np.around(1 / mean_diff, 2)
+        ))
+        timings = []
+    return timings, start
+

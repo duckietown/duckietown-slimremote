@@ -1,5 +1,9 @@
+from threading import Thread
+
 import cv2
 import numpy as np
+
+from duckietown_slimremote.networking import make_pub_socket, send_array
 from duckietown_slimremote.robot.constants import CAM_FAILURE_COUNTER
 
 
@@ -32,6 +36,35 @@ class Camera():
 
         # frame is recorded in OpenCV BGR, but here we
         # invert color channel order to get RGB.
-        # Also make sure that teh array is C-contiguous.
+        # Also make sure that the array is C-contiguous
+        # which we need it to be for the transmission
         return np.asarray(frame[:, :, ::-1], order='C')
 
+
+class ThreadedPubCamera(Thread):
+    def __init__(self, queue):
+        Thread.__init__(self)
+        self.queue = queue
+        self.publisher_sockets = []
+        self.cam = Camera(res=(160,128))
+
+    def run(self):
+        # look for new subscribers from queue
+        # get camera image
+        # send image to all subscribers
+
+        keep_running = True
+        while keep_running:
+            if not self.queue.empty():
+                cmd = self.queue.get()
+                if cmd == "kill":
+                    keep_running = False
+                    break  # redundant I guess
+                else:
+                    # we assume that then the cmd is an IP address
+                    self.publisher_sockets.append(make_pub_socket(cmd, for_images=True))
+
+            img = self.cam.observe()
+
+            for pub in self.publisher_sockets:
+                send_array(pub, img)
