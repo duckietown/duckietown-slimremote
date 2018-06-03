@@ -24,5 +24,9 @@ while True:
             print(data)  # in error case, this will contain the err msg
             continue
 
-        cam.addSubscriber(data["ip"])
-        print("received new connection:", data)
+        if data["topic"] == 0:
+            motors.run(data["msg"])
+
+        is_new = cam.addSubscriber(data["ip"])
+        if is_new:
+            print("received new cam subscriber:", data)

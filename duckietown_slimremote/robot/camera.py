@@ -110,3 +110,6 @@ class CameraController():
         if ip not in self.cam_subscribers:
             self.cam_queue.put(ip)
             self.cam_subscribers.append(ip)
+            return True
+        else:
+            return False

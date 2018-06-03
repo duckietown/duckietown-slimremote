@@ -1,3 +1,4 @@
+import queue
 from multiprocessing import Process
 from threading import Thread
 import time
@@ -145,7 +146,6 @@ def make_async_controller(base):
                         self.robot.list_action(action)
                         self.last_action_time = time.time()
                         self.last_action = action
-                    self.queue.task_done()
 
                 else:
                     delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
@@ -177,7 +177,7 @@ class FailsafeController():
 
     def __init__(self):
         ctrl_class, ctrl_queue = make_async_controller(Process)
-        self.queue = ctrl_queue()
+        self.queue = ctrl_queue(2)
 
         self.ctrl = ctrl_class(self.queue)
         self.ctrl.daemon = True
@@ -186,7 +186,14 @@ class FailsafeController():
     def run(self, action):
         # action must be either a list, tuple or NumPy array of len 2
         assert len(action) == 2
+        if not self.queue.empty():
+            try:
+                self.queue.get(timeout=0.02)
+            except queue.Empty:  # this is independent of queue type
+                pass  # this happens sometimes, no bad consequence
+
         self.queue.put(action)
+        time.sleep(0.01)  # this is to block flooding
 
     def stop(self):
         self.queue.put("quit")

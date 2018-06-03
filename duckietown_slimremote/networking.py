@@ -116,12 +116,12 @@ def receive_data(socket_sub):
                "What I got from you was: '{}'".format(data)
         return False, data
 
-    topic = split[0]
+    topic = int(split[0]) # topic 0 means set action, topic 1 means get image
     id = split[1]  # TODO: add ID sanity check here
     ip = split[2]  # TODO: add IP sanity check here
     msg = split[3]
 
-    if int(topic) not in [0, 1, 99]:
+    if topic not in [0, 1, 99]:
         data = "Received an incorrect topic: {}." \
                "Only allowed topics: 0 or 1.".format(topic)
         return False, data
@@ -136,6 +136,7 @@ def receive_data(socket_sub):
                        "values separated by a comma like so: " \
                        "0.5111,-0.7".format(msg)
                 return False, data
+        msg = [float(m) for m in msg]
 
     return True, {"topic": topic, "id": id, "ip": ip, "msg": msg}
 
@@ -172,7 +173,8 @@ def construct_action(id, ip, action=None):
     if action is None:  # then it's a heartbeat
         return "1 {} {} 0".format(id, ip)
     else:
-        return "0 {} {} {}".format(id, ip, action)
+        assert len(action) == 2
+        return "0 {} {} {},{}".format(id, ip, action[0], action[1])
 
 
 class ThreadedActionSubscriber(Thread):
