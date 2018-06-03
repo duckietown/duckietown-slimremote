@@ -1,8 +1,12 @@
-from queue import Queue
+import multiprocessing
+import threading
+from multiprocessing import Process
 from threading import Thread
+from queue import Queue as ThreadQueue
 
 import cv2
 import numpy as np
+import zmq
 
 from duckietown_slimremote.networking import make_pub_socket, send_array
 from duckietown_slimremote.robot.constants import CAM_FAILURE_COUNTER
@@ -44,40 +48,65 @@ class Camera():
         return np.asarray(frame[:, :, ::-1], order='C')
 
 
-class ThreadedPubCamera(Thread):
-    def __init__(self, queue):
-        Thread.__init__(self)
-        self.queue = queue
-        self.publisher_sockets = []
-        self.cam = Camera(res=(160, 128))
+def make_async_camera(base):
+    """ allows to instantiate the camera as thread or as process
 
-    def run(self):
-        # look for new subscribers from queue
-        # get camera image
-        # send image to all subscribers
+    :param base: options are Thread|Process
+    :return:
+    """
 
-        keep_running = True
-        while keep_running:
-            if not self.queue.empty():
-                cmd = self.queue.get()
-                if cmd == "kill":
-                    keep_running = False
-                    break  # redundant I guess
-                else:
-                    # we assume that then the cmd is an IP address
-                    self.publisher_sockets.append(make_pub_socket(cmd, for_images=True))
+    class AsyncPubCamera(base):
+        def __init__(self, queue):
+            super(AsyncPubCamera, self).__init__()
+            # Thread.__init__(self)
+            self.queue = queue
+            self.publisher_sockets = []
+            self.cam = Camera(res=(160, 128))
+            self.context = zmq.Context()
 
-            img = self.cam.observe()
+        def run(self):
+            # look for new subscribers from queue
+            # get camera image
+            # send image to all subscribers
 
-            for pub in self.publisher_sockets:
-                send_array(pub, img)
+            keep_running = True
+            while keep_running:
+                if not self.queue.empty():
+                    cmd = self.queue.get()
+                    if cmd == "kill":
+                        keep_running = False
+                        break  # redundant I guess
+                    else:
+                        # we assume that then the cmd is an IP address
+                        self.publisher_sockets.append(
+                            make_pub_socket(
+                                cmd,
+                                for_images=True,
+                                context_=self.context
+                            )
+                        )
+
+                img = self.cam.observe()
+
+                for pub in self.publisher_sockets:
+                    send_array(pub, img)
+
+    if base is multiprocessing.context.Process:
+        queue = multiprocessing.Queue
+    else:
+        queue = ThreadQueue
+
+    return AsyncPubCamera, queue
 
 
 class CameraController():
 
     def __init__(self) -> None:
-        self.cam_queue = Queue()
-        self.cam = ThreadedPubCamera(self.cam_queue)
+        # cam_class = make_async_camera(Thread)
+        cam_class, cam_queue = make_async_camera(Process)
+        self.cam_queue = cam_queue()
+
+        self.cam = cam_class(self.cam_queue)
         self.cam.daemon = True  # so that you can kill the thread
         self.cam.start()
         self.cam_subscribers = []

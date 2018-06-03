@@ -2,12 +2,14 @@ from queue import Queue
 
 from duckietown_slimremote.networking import make_pull_socket, has_pull_message, receive_data
 from duckietown_slimremote.robot.camera import CameraController
+from duckietown_slimremote.robot.motors import FailsafeController
 
 # start camera thread
 # start motor thread
 # start subscriber sub
 
 cam = CameraController()
+# motors = FailsafeController()
 
 sock, poll = make_pull_socket()
 

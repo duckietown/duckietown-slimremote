@@ -57,11 +57,14 @@ def make_sub_socket(with_failsafe=False, for_images=False, context_=None):
     return socket_sub
 
 
-def make_pub_socket(ip, for_images=False):
+def make_pub_socket(ip, for_images=False, context_=None):
+    if context_ is None:
+        context_ = context
+
     port = get_port(for_images)
 
     print("starting pub socket on", port, ip)
-    socket_pub = context.socket(zmq.PUB)
+    socket_pub = context_.socket(zmq.PUB)
     socket_pub.connect("tcp://{}:{}".format(
         ip,
         port
