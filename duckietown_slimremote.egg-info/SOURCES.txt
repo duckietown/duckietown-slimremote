@@ -1,6 +1,0 @@
-duckietown_slimremote.egg-info/PKG-INFO
-duckietown_slimremote.egg-info/SOURCES.txt
-duckietown_slimremote.egg-info/dependency_links.txt
-duckietown_slimremote.egg-info/entry_points.txt
-duckietown_slimremote.egg-info/requires.txt
-duckietown_slimremote.egg-info/top_level.txt
