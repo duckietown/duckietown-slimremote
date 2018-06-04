@@ -48,7 +48,9 @@ There you can find the methods:
  Stops the robot (sends a `[0,0]` action).
 
 
- 
+## Communication & Architecture
+
+![image depicting the different components and how they interact](doc/overview.png "Architecture Overview")
 
  
 
