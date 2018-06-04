@@ -46,7 +46,7 @@ There you can find the methods:
  
 **reset()**:
  Stops the robot (sends a `[0,0]` action).
-
+d
 
 ## Communication & Architecture
 

@@ -1,12 +1,9 @@
-import random
 from queue import Queue
 from threading import Thread
 
 import zmq
 
 import sys
-
-from duckietown_slimremote.helpers import random_id
 
 if sys.version_info > (3,):
     buffer = memoryview
@@ -17,7 +14,7 @@ import socket
 
 hostname = socket.gethostname()
 
-context = zmq.Context()  # we only ever need one context. This is thread-safe
+context = zmq.Context()  # we only ever need one context. This is thread-safe, but not process-safe afaik
 
 
 def get_port(for_images=False):
@@ -230,6 +227,7 @@ def start_thread_w_queue(threadName):
 
 
 def get_last_queue_element(queue):
+    # it turns out there is also a thing called LifoQueue...
     out = queue.get(block=True)
     while not queue.empty():
         out = queue.get()
