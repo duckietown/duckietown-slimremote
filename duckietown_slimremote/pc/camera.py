@@ -13,11 +13,11 @@ from duckietown_slimremote.networking import make_sub_socket, recv_array
 
 
 class ThreadedSubCamera(Thread):
-    def __init__(self, queue):
+    def __init__(self, queue, host):
         Thread.__init__(self)
         context = zmq.Context.instance()
         self.queue = queue
-        self.sock = make_sub_socket(for_images=True, context_=context)
+        self.sock = make_sub_socket(for_images=True, context_=context, target=host)
 
     def run(self):
         # block while waiting for image
@@ -39,9 +39,9 @@ class ThreadedSubCamera(Thread):
 
 class SubCameraMaster():
     # controls and communicates with the threaded sub camera
-    def __init__(self):
+    def __init__(self, host):
         self.queue = LifoQueue(2)
-        self.cam_thread = ThreadedSubCamera(self.queue)
+        self.cam_thread = ThreadedSubCamera(self.queue, host)
         # self.cam_thread.daemon = True
         self.cam_thread.start()
         self.last_img = None

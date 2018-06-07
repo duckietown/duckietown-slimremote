@@ -16,7 +16,7 @@ class RemoteRobot():
         self.robot_sock = make_push_socket(host)
         self.robot_sock.send_string(self.ping_msg)
 
-        self.cam = SubCameraMaster()
+        self.cam = SubCameraMaster(host)
 
     def step(self, action, with_observation=True):
         assert len(action) == 2
@@ -93,13 +93,13 @@ class KeyboardControlledRobot():
     def keysToAction(self):
         action = np.array([0,0])
         if 8320768 in self.history and 8189699 in self.history: # UP/RIGHT
-            action = np.array([.9, .3])
-        elif 8320768 in self.history and 8124162 in self.history: # UP/LEFT
             action = np.array([.3, .9])
+        elif 8320768 in self.history and 8124162 in self.history: # UP/LEFT
+            action = np.array([.9, .3])
         elif 8255233 in self.history and 8189699 in self.history: # DOWN/RIGHT
-            action = np.array([-.9, -.3])
-        elif 8255233 in self.history and 8124162 in self.history: # DOWN/LEFT
             action = np.array([-.3, -.9])
+        elif 8255233 in self.history and 8124162 in self.history: # DOWN/LEFT
+            action = np.array([-.9, -.3])
         elif 8320768 in self.history: # UP
             action = np.array([.9,.9])
         elif 8189699 in self.history: # RIGHT

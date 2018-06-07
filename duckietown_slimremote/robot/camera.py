@@ -58,7 +58,7 @@ def make_async_camera(base):
             super(AsyncPubCamera, self).__init__()
             # Thread.__init__(self)
             self.queue = queue
-            self.publisher_sockets = []
+            self.publisher_socket = None
             self.cam = Camera(res=(160, 128))
             self.context = zmq.Context()
 
@@ -75,19 +75,18 @@ def make_async_camera(base):
                         keep_running = False
                         break  # redundant I guess
                     else:
-                        # we assume that then the cmd is an IP address
-                        self.publisher_sockets.append(
-                            make_pub_socket(
+                        if self.publisher_socket is None:
+                            self.publisher_socket = make_pub_socket(
                                 cmd,
                                 for_images=True,
                                 context_=self.context
                             )
-                        )
 
-                img = self.cam.observe()
-
-                for pub in self.publisher_sockets:
-                    send_array(pub, img)
+                if self.publisher_socket is not None:
+                    img = self.cam.observe()
+                    print("sending img","."*np.random.randint(1,10))
+                    send_array(self.publisher_socket, img)
+                    print("sent")
 
     queue = get_right_queue(base)
 

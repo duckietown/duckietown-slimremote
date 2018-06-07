@@ -32,15 +32,17 @@ def get_ip():
     return socket.gethostbyname(hostname)
 
 
-def make_sub_socket(with_failsafe=False, for_images=False, context_=None):
+def make_sub_socket(with_failsafe=False, for_images=False, context_=None, target=None):
     if context_ is None:
         context_ = context
+    if target is None:
+        target = "*"
 
     port = get_port(for_images)
 
     print("starting sub socket on", port)
     socket_sub = context_.socket(zmq.SUB)
-    socket_sub.bind("tcp://*:{}".format(port))
+    socket_sub.connect("tcp://{}:{}".format(target, port))
 
     if not for_images:
         print("listening for topics 0, 1")
@@ -64,8 +66,7 @@ def make_pub_socket(ip, for_images=False, context_=None):
 
     print("starting pub socket on", port, ip)
     socket_pub = context_.socket(zmq.PUB)
-    socket_pub.connect("tcp://{}:{}".format(
-        ip,
+    socket_pub.bind("tcp://*:{}".format(
         port
     ))
 
