@@ -58,13 +58,13 @@ def make_sub_socket(with_failsafe=False, for_images=False, context_=None, target
     return socket_sub
 
 
-def make_pub_socket(ip, for_images=False, context_=None):
+def make_pub_socket(for_images=False, context_=None):
     if context_ is None:
         context_ = context
 
     port = get_port(for_images)
 
-    print("starting pub socket on", port, ip)
+    print("starting pub socket on", port)
     socket_pub = context_.socket(zmq.PUB)
     socket_pub.bind("tcp://*:{}".format(
         port

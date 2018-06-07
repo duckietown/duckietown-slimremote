@@ -17,6 +17,8 @@ sock, poll = make_pull_socket()
 
 print("Robot listening to incoming connections...")
 
+cam_started = False
+
 while True:
     if has_pull_message(sock, poll):
         success, data = receive_data(sock)
@@ -27,6 +29,9 @@ while True:
         if data["topic"] == 0:
             motors.run(data["msg"])
 
-        is_new = cam.addSubscriber(data["ip"])
-        if is_new:
-            print("received new cam subscriber:", data)
+        if not cam_started:
+            cam.init()
+            cam_started = True
+
+        if data["topic"] == 1:
+            print("received ping:", data)

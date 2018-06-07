@@ -22,10 +22,6 @@ robot_sock.send_string(msg)
 
 cam_windows_init_opencv()
 
-timings = []
-start = time.time()
-
 while True:
     img = cam.get_img_blocking()
-    timings, start = timer(timings, start, prefix="test")
     cam_windows_update_opencv(img)

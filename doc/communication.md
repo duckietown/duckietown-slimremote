@@ -9,12 +9,14 @@ The robot/sim side opens a PULL socket on start (`zmq.PULL`), on port `5558`, th
 
 There are two possible messages types for the PUSH/PULL socket:
 
-1. Ping/"heartbeat" messages (`topic = 0`), to tell the robot/sim about a new image subscriber. This has to be sent at least every 60s because otherwise the PC will be removed from the list of image subscribers.  
+1. Ping/"heartbeat" messages (`topic = 0`), to introduce the  image subscriber and start the camera (if not already done). This is mandatory at the very beginning of every program that controls or observes the robot in order to make sure the PC will receive images.  
 2. Action messages (`topic = 1`), to send a single motor command. 
 
-Neither of these two messages have a response from the robot/sim server. The result of the ping message is that the PC will from now on and for the next ~60s receive images. The result of the action message is that the robot/sim will start moving. Therefore the ping should always be the first step in establishing a connection from the PC side.
+Neither of these two messages have a response from the robot/sim server. The result of the ping message is that the PC will from now on receive images. The result of the action message is that the robot/sim will start moving. Therefore the ping should always be the first step in establishing a connection from the PC side.
 
 Both messages have to be sent to the IP/hostname of the robot/sim on a `zmq.PUSH` socket via `socket.send_string()`.
+
+You can construct either message by using the method `duckietown_slimremote.networking:construct_action()`.
 
 #### Ping message structure
 
@@ -65,7 +67,7 @@ Example:
 
 On start, the robot process also launches a process that runs independently of the main process, which grabs camera images as fast as possible (~60Hz) in case of the real robot and once after every action in case of the simulation and sends them to all subscribers. The list of subscribers is updated via the main process via incoming ping messages and dead subscribers are removed after 60s inactivity.
 
-For each subscriber that is added, the robot/sim camera process opens a publisher (`zmq.PUB`) socket which is bound to the target's IP address at port `8902`. This socket is only created upon first connection and then kept in memory for reuse.
+After the first subscriber is connected, the robot/sim camera process opens a publisher (`zmq.PUB`) socket which is bound to the broadcast address at port `8902`. This socket is only created upon first connection and then kept in memory for reuse. Even if the last image subscriber drops out, the socket will keep sending images out without blocking. The images are sent to all subscribers simultaneously. (NOTE: We should test if having more than 2 subscribers connected leads to any slowdown)
 
 The image is transmitted in two steps (code provided by the PyZMQ website):
     
@@ -80,7 +82,7 @@ The PC client has to create a PUSH socket (`zmq.PUSH`) that is bound to the robo
 
 On this socket the PC can send messages according to the format specified above (ping & action).
 
-The PC launches a camera subscriber thread that is constantly listening to images on a `zmq.SUB` socket on any IP address on port `8902`. The PC subscriber has to set the allowed topics to be `"0"` and `"1"` via `socket.setsockopt_string(zmq.SUBSCRIBE, topic)`, otherwise nothing will be received. Currently there is no identification of images, therefore if a PC with a given IP sends a heartbeat to multiple robots/sims, it will receive an interleaved stream of images from both robots/sims. (Note: we should probably add an identifier here, in the JSON header of the image - the image ID could be the ID that the PC initially sent in the ping message).
+The PC launches a camera subscriber thread that is constantly listening to images on a `zmq.SUB` socket on the IP address or hostname of the robot on port `8902`. The PC subscriber has to set the allowed topics to be `""` (empty) via `socket.setsockopt_string(zmq.SUBSCRIBE, topic)`, otherwise nothing will be received.
  
 ## Differences between simulated and real robot
 

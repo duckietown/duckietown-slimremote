@@ -63,9 +63,10 @@ def make_async_camera(base):
             self.context = zmq.Context()
 
         def run(self):
-            # look for new subscribers from queue
+            # wait for first subscriber
+            # then create socket
             # get camera image
-            # send image to all subscribers
+            # broadcast image
 
             keep_running = True
             while keep_running:
@@ -77,16 +78,14 @@ def make_async_camera(base):
                     else:
                         if self.publisher_socket is None:
                             self.publisher_socket = make_pub_socket(
-                                cmd,
                                 for_images=True,
                                 context_=self.context
                             )
 
+                # the pub / send_array method only works once the first subscriber is connected
                 if self.publisher_socket is not None:
                     img = self.cam.observe()
-                    print("sending img","."*np.random.randint(1,10))
                     send_array(self.publisher_socket, img)
-                    print("sent")
 
     queue = get_right_queue(base)
 
@@ -103,12 +102,6 @@ class CameraController():
         self.cam = cam_class(self.cam_queue)
         self.cam.daemon = True  # so that you can kill the thread
         self.cam.start()
-        self.cam_subscribers = []
 
-    def addSubscriber(self, ip):
-        if ip not in self.cam_subscribers:
-            self.cam_queue.put(ip)
-            self.cam_subscribers.append(ip)
-            return True
-        else:
-            return False
+    def init(self):
+        self.cam_queue.put("init")
