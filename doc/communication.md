@@ -74,7 +74,7 @@ The image is transmitted in two steps (code provided by the PyZMQ website):
  1. JSON-serialized metadata about the image (i.e. size & datatype), sent with the `zmq.SNDMORE` flag.
  2. Binary buffer of the actual image
  
-The image dimensions are currently `160 x 128 x 3` (width x height x color channels in RGB order).
+The image dimensions are currently `160 x 120 x 3` (width x height x color channels in RGB order).
 
 ## PC side
 

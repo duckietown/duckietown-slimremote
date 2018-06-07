@@ -78,7 +78,7 @@ def cam_window_update(img, img_container, img_window):
     plt.pause(0.001)
 
 
-def cam_windows_init_opencv(res=(160, 128, 3)):
+def cam_windows_init_opencv(res=(160, 120, 3)):
     cv2.imshow('livecam', np.zeros(res))
     cv2.waitKey(1)
 

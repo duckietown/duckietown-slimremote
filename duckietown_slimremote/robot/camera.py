@@ -59,7 +59,7 @@ def make_async_camera(base):
             # Thread.__init__(self)
             self.queue = queue
             self.publisher_socket = None
-            self.cam = Camera(res=(160, 128))
+            self.cam = Camera(res=(160, 120))
             self.context = zmq.Context()
 
         def run(self):

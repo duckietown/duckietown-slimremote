@@ -56,7 +56,7 @@ class KeyboardControlledRobot():
 
         # Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
 
-        im = Image.fromarray(np.zeros((160,128,3),dtype=np.uint8))
+        im = Image.fromarray(np.zeros((160,120,3),dtype=np.uint8))
         self.img = ImageTk.PhotoImage(im)
         self.panel = tkinter.Label(self.rootwindow, image=self.img)
 
