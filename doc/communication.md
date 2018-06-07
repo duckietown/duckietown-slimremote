@@ -1,7 +1,7 @@
 # How does the ZMQ communication work?
 
 In addition to this documentation please also look at the networking code in 
-[`duckietown_slimremote/networking.py`](duckietown_slimremote/networking.py).
+[`duckietown_slimremote/networking.py`](https://github.com/duckietown/duckietown-slimremote/blob/master/duckietown_slimremote/networking.py).
 
 ## Robot/Sim side
 
