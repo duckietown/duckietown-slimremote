@@ -114,7 +114,9 @@ def receive_data(socket_sub):
                "X is a a random integer between 0 and 99999 to " \
                "identify the client (e.g. 45678,\n" \
                "Y is the IP address (e.g. 10.0.0.1),\n" \
-               "Z is the action (e.g. for topic 0: -1,1 or for topic 1: 0).\n" \
+               "Z is the action (e.g. for topic 0: -1,1 " \
+               "[if you don't want LED control] or -1,1,0,0.5,0 " \
+               "[if you want LED control] or for topic 1: 0).\n" \
                "Example: '0 3716 192.168.0.14 0.5,0.6'.\n" \
                "What I got from you was: '{}'".format(data)
         return False, data
@@ -131,15 +133,26 @@ def receive_data(socket_sub):
 
     if topic == 0:
         msg = msg.split(",")
-        if len(msg) != 2:
+        if len(msg) != 2 and len(msg) != 5:
             msg = msg[0].split(";")
-            if len(msg) != 2:
+            if len(msg) != 2 and len(msg) != 5:
                 data = "The action command is malformed: '{}'." \
-                       "The action must be two floating point" \
+                       "The action must be either two or five floating point" \
                        "values separated by a comma like so: " \
-                       "0.5111,-0.7".format(msg)
+                       "0.5111,-0.7 or so 0.5111,-0.7,0,0.5,1".format(msg)
                 return False, data
+
+
         msg = [float(m) for m in msg]
+
+        ### check for LED command sanity
+        if len(msg) == 5:
+            if min(msg[2:]) < 0 or max(msg[2:]) > 1:
+                data = "The LED command has to be in range [0;1] " \
+                       "on each RGB color channel. However I got the " \
+                       "colors: {}".format(msg)
+                return False,data
+
 
     return True, {"topic": topic, "id": id, "ip": ip, "msg": msg}
 
@@ -182,8 +195,12 @@ def construct_action(id, ip=None, action=None):
     if action is None:  # then it's a heartbeat
         return "1 {} {} 0".format(id, ip)
     else:
-        assert len(action) == 2
-        return "0 {} {} {},{}".format(id, ip, action[0], action[1])
+        assert len(action) == 2 or len(action) == 5
+        out = "0 {} {} ".format(id, ip)
+        if len(action) == 2:
+            return out + "{},{}".format(*action)
+        else:
+            return out + "{},{},{},{},{}".format(*action)
 
 
 class ThreadedActionSubscriber(Thread):

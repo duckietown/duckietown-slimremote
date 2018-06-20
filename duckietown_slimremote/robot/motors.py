@@ -10,6 +10,8 @@ from duckietown_slimremote.robot.constants import MOTOR_MAX_SPEED, DECELERATION_
 
 from queue import Queue
 
+from duckietown_slimremote.robot.led import RGB_LED
+
 
 def denormalize_speed(norm):
     unshifted = (norm + 1) / 2
@@ -68,10 +70,15 @@ def ease_out_action(last_action, delta):
 
 
 class Controller():
-    def __init__(self):
+    def __init__(self, with_rgb=True):
+        self.with_rgb = with_rgb
+
         motorhat = Adafruit_MotorHAT(addr=0x60)
         self.leftMotor = motorhat.getMotor(1)
         self.rightMotor = motorhat.getMotor(2)
+
+        if self.with_rgb:
+            self.rgb = RGB_LED()
 
     def left_action(self, speed):
         """ set the speed and direction of the left wheel (negative = backwards)
@@ -114,6 +121,16 @@ class Controller():
         self.right_action(speeds[0])
         self.left_action(speeds[1])
 
+    def rgb_action(self, rgb):
+        assert len(rgb) == 3
+        assert max(rgb) <= 1 and min(rgb) >= 0
+
+        for led in range(5):
+            self.rgb.setRGB(led, rgb)
+
+    def rgb_off(self):
+        self.rgb_action([0] * 3)
+
     def stop(self):
         self.list_action([0, 0])
 
@@ -142,13 +159,19 @@ def make_async_controller(base):
                     if action == "quit":
                         keep_running = False
                         self.robot.list_action([0, 0])
+                        self.robot.rgb_off()
                     else:
-                        self.robot.list_action(action)
+                        self.robot.list_action(action[:2])
+                        if len(action) == 5:
+                            self.robot.rgb_action(action[2:])
+
                         self.last_action_time = time.time()
                         self.last_action = action
 
                 else:
+                    # check if it's time to break
                     delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
+
                     if delta >= 0 and delta < DECELERATION_BREAK_TIME:
                         # decelerate
                         if len(self.last_action) == 2:
@@ -185,7 +208,7 @@ class FailsafeController():
 
     def run(self, action):
         # action must be either a list, tuple or NumPy array of len 2
-        assert len(action) == 2
+        assert len(action) == 2 or len(action) == 5
         if not self.queue.empty():
             try:
                 self.queue.get(timeout=0.02)

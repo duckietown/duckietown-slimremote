@@ -19,7 +19,7 @@ class RemoteRobot():
         self.cam = SubCameraMaster(host)
 
     def step(self, action, with_observation=True):
-        assert len(action) == 2
+        assert len(action) == 2 or len(action) == 5
         msg = construct_action(self.id, action=action)
 
         # run action on robot
