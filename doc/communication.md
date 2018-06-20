@@ -48,20 +48,29 @@ Example:
 
 Each **action** message has the following format:
 
-    "1 X Y A,B"
+    "1 X Y Z"
     
 where
 
     X,Y = same as for ping message
     
-    A,B = two floating point values in range [-1,1] 
-          separated by a comma, indicating the motor
-          commands for the left and right motor 
-          respectively.
+    Z =  either just a motor command (two floating point 
+    values) or a motor command combined with an LED command 
+    (five floating points values). All these floating point 
+    values are separated by comma. The motor part is always 
+    in range[-1,1] and corresponds to the speed of the left 
+    and right motor. The LED part (last 3 floats) are in 
+    range [0;1] and correspond to the color channels red, 
+    green, and blue if the use wants to include them. 
     
 Example:
 
     "1 1337 192.168.1.15 -0.54,0.333333"
+    (doesn't include LED values)
+    
+    "1 1337 192.168.1.15 -0.54,0.3,0,0.55,1"
+    (which does include LED values, corresponding to
+    0 parts red, 0.55 parts green and 1 part blue) 
     
 #### Images/Observations
 
