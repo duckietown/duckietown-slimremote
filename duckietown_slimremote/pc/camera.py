@@ -42,7 +42,7 @@ class SubCameraMaster():
     def __init__(self, host):
         self.queue = LifoQueue(2)
         self.cam_thread = ThreadedSubCamera(self.queue, host)
-        # self.cam_thread.daemon = True
+        self.cam_thread.daemon = True
         self.cam_thread.start()
         self.last_img = None
 
@@ -56,10 +56,6 @@ class SubCameraMaster():
             return self.last_img
         else:
             return None
-
-    def stop(self):
-        # TODO: implement this
-        pass
 
 
 def cam_window_init():
