@@ -1,7 +1,7 @@
 # stretch because that's the same as the hypriotOS image
 FROM  resin/rpi-raspbian:stretch
 
-COPY ./bin/ /usr/bin/
+COPY bin/ /usr/bin/
 
 RUN [ "cross-build-start" ]
 
