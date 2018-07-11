@@ -44,7 +44,7 @@ RUN rm -rf ~/opencv && \
     libavformat-dev libswscale-dev libv4l-dev libxvidcore-dev \
     libx264-dev libatlas-base-dev python3-dev
 
-RUN git clone https://github.com/duckietown/duckietown-slimremote.git && \
+RUN git clone --depth 1 https://github.com/duckietown/duckietown-slimremote.git && \
     cd duckietown-slimremote && \
     pip3 install -e .
 
