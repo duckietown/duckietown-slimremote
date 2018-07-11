@@ -12,7 +12,6 @@ if os.path.isfile(rpi_model_file):
 
 install_requires = [
     # 'gym>=0.2.3',
-    'Adafruit-MotorHAT',
     'numpy',
     'zmq'
 ]
