@@ -16,6 +16,7 @@ hostname = socket.gethostname()
 
 context = zmq.Context()  # we only ever need one context. This is thread-safe, but not process-safe afaik
 
+RESET = "reset"
 
 def get_port(for_images=False):
     port = 8901  # for pc->robot comm
@@ -110,7 +111,7 @@ def receive_data(socket_sub):
         data = "Received data of wrong length." \
                "The data must have this format:" \
                "'W X Y Z', where \n" \
-               "W is an integer (the topic, i.e. 0 or 1),\n" \
+               "W is an integer (the topic, i.e. 0, 1 or 2),\n" \
                "X is a a random integer between 0 and 99999 to " \
                "identify the client (e.g. 45678,\n" \
                "Y is the IP address (e.g. 10.0.0.1),\n" \
@@ -121,14 +122,14 @@ def receive_data(socket_sub):
                "What I got from you was: '{}'".format(data)
         return False, data
 
-    topic = int(split[0])  # topic 0 means set action, topic 1 means get image
+    topic = int(split[0])  # topic 0 means set action, topic 1 means get image, topic 2 means reset
     id = split[1]  # TODO: add ID sanity check here
     ip = split[2]  # TODO: add IP sanity check here
     msg = split[3]
 
-    if topic not in [0, 1, 99]:
+    if topic not in [0, 1, 2, 99]:
         data = "Received an incorrect topic: {}." \
-               "Only allowed topics: 0 or 1.".format(topic)
+               "Only allowed topics: 0, 1 or 2.".format(topic)
         return False, data
 
     if topic == 0:
@@ -183,18 +184,21 @@ def recv_array(socket, flags=0, copy=True, track=False):
     return A.reshape(md['shape'])
 
 
-def send_img_reward(socket, img, reward, flags=0, copy=True, track=False):
+def send_gym(socket, img, reward, done, flags=0, copy=True, track=False):
     send_array(socket, img, flags | zmq.SNDMORE, copy, track)
-    socket.send_string(str(reward), flags)
+    socket.send_string(str(reward), flags | zmq.SNDMORE)
+    return socket.send_string(str(done), flags)
 
 
-def recv_img_reward(socket, flags=0, copy=True, track=False):
+def recv_gym(socket, flags=0, copy=True, track=False):
     md = socket.recv_json(flags=flags)
     msg = socket.recv(flags=flags, copy=copy, track=track)
     rew = float(socket.recv_string(flags=flags))
+    done = socket.recv_string(flags=flags)
+    done = (done == "True")
     buf = buffer(msg)
     A = np.frombuffer(buf, dtype=md['dtype'])
-    return (A.reshape(md['shape']), rew)
+    return (A.reshape(md['shape']), rew, done)
 
 
 def construct_action(id, ip=None, action=None):
@@ -206,6 +210,8 @@ def construct_action(id, ip=None, action=None):
 
     if action is None:  # then it's a heartbeat
         return "1 {} {} 0".format(id, ip)
+    elif isinstance(action, str) and action == RESET:
+        return "2 {} {} 0".format(id, ip)
     else:
         assert len(action) == 2 or len(action) == 5
         out = "0 {} {} ".format(id, ip)

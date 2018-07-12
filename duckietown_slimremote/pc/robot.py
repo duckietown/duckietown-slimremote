@@ -3,7 +3,7 @@ import numpy as np
 from PIL import ImageTk, Image
 
 from duckietown_slimremote.helpers import random_id
-from duckietown_slimremote.networking import make_push_socket, construct_action
+from duckietown_slimremote.networking import make_push_socket, construct_action, RESET
 from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
@@ -28,17 +28,17 @@ class RemoteRobot():
 
         # return last known camera image #FIXME: this must be non-blocking and re-send ping if necessary
         if with_observation:
-            return self.cam.get_img_reward_nonblocking()
+            return self.cam.get_gym_nonblocking()
         else:
             return None
 
     def observe(self):
-        return self.cam.get_img_reward_nonblocking()
+        return self.cam.get_gym_nonblocking()
 
     def reset(self):
-        # This purposefully doesn't do anything on the real robot (other than halt).
-        # But in sim this obviously resets the simulation
-        return self.step([0, 0])
+        msg = construct_action(self.id, action=RESET)
+        self.robot_sock.send_string(msg)
+        print("sent reset")
 
 
 class KeyboardControlledRobot():
@@ -73,13 +73,13 @@ class KeyboardControlledRobot():
 
     def updateImg(self):
         self.rootwindow.after(200, self.updateImg)
-        obs, rew = self.robot.observe()
+        obs, rew, done = self.robot.observe()
         if obs is not None:
             img2 = ImageTk.PhotoImage(Image.fromarray(obs))
             self.panel.configure(image=img2)
             self.panel.image = img2
             if not (self.last_obs == obs).all():
-                print("reward: ", rew)
+                print("reward: {}, done: {}".format(rew, done))
                 self.last_obs = obs
 
         return
@@ -87,11 +87,19 @@ class KeyboardControlledRobot():
     def keyup(self, e):
         if e.keycode in self.history:
             self.history.pop(self.history.index(e.keycode))
-        self.moveRobot()
+
+        # FIXME: commenting this out might break the control of the real robot,
+        # but also the real robot should break automatically
+
+        # self.moveRobot()
+
 
     def moveRobot(self):
         action = self.keysToAction()
-        _ = self.robot.step(action, with_observation=False)
+        if len(action) > 0 and action[0] != RESET:
+            _ = self.robot.step(action, with_observation=False)
+        else:
+            self.robot.reset()
 
     def keydown(self, e):
         if not e.keycode in self.history:
@@ -118,6 +126,11 @@ class KeyboardControlledRobot():
             return True
         return False
 
+    def _key_reset(self):  # "r" key, don't know the mac key right now
+        if 27 in self.history:
+            return True
+        return False
+
     def keysToAction(self):
         # mac / lin keycodes
         action = np.array([0, 0])
@@ -137,4 +150,7 @@ class KeyboardControlledRobot():
             action = np.array([-.4, -.4])
         elif self._key_left():  # LEFT
             action = np.array([0, .4])
+
+        if self._key_reset():
+            action = [RESET]
         return action

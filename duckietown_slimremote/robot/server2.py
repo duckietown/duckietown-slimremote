@@ -35,3 +35,8 @@ while True:
 
         if data["topic"] == 1:
             print("received ping:", data)
+
+        if data["topic"] == 2:
+            print("received reset. "
+                  "On the real robot this doesn't do anything. "
+                  "In simulation this resets the simulator")

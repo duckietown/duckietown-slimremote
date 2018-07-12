@@ -10,7 +10,7 @@ matplotlib.use('TkAgg')  # needed for tkinter GUI
 import matplotlib.pyplot as plt
 
 from duckietown_slimremote.helpers import timer
-from duckietown_slimremote.networking import make_sub_socket, recv_array, recv_img_reward
+from duckietown_slimremote.networking import make_sub_socket, recv_gym
 
 
 class ThreadedSubCamera(Thread):
@@ -29,13 +29,13 @@ class ThreadedSubCamera(Thread):
         timings = []
         start = time.time()
         while keep_running:
-            img, rew = recv_img_reward(self.sock)
+            img, rew, done = recv_gym(self.sock)
 
             timings, start = timer(timings, start)
 
             if not self.queue.empty():
                 self.queue.get()  # discard last img, only ever keep one
-            self.queue.put((img, rew))
+            self.queue.put((img, rew, done))
 
 
 class SubCameraMaster():
@@ -45,17 +45,20 @@ class SubCameraMaster():
         self.cam_thread = ThreadedSubCamera(self.queue, host)
         self.cam_thread.daemon = True
         self.cam_thread.start()
+
+        # need caching for non-blocking calls (in case the server has a hickup)
         self.last_img = None
         self.last_rew = None
+        self.last_done = None
 
-    def get_img_reward_blocking(self):
-        self.last_img, self.last_rew = self.queue.get(block=True)  # wait for image, blocking
-        return (self.last_img, self.last_rew)
+    def get_gym_blocking(self):
+        self.last_img, self.last_rew, self.last_done = self.queue.get(block=True)  # wait for image, blocking
+        return (self.last_img, self.last_rew, self.last_done)
 
-    def get_img_reward_nonblocking(self):
+    def get_gym_nonblocking(self):
         if not self.queue.empty():
-            self.last_img, self.last_rew = self.queue.get(block=False)  # TO TEST: might fail
-        return (self.last_img, self.last_rew)
+            self.last_img, self.last_rew, self.last_done = self.queue.get(block=False)  # TO TEST: might fail
+        return (self.last_img, self.last_rew, self.last_done)
 
 
 def cam_window_init():
