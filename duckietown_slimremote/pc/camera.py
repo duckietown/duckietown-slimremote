@@ -55,7 +55,7 @@ class SubCameraMaster():
             self.last_img = self.queue.get(block=False)  # TO TEST: might fail
             return self.last_img
         else:
-            return None
+            return self.last_img # use cached img
 
 
 def cam_window_init():
