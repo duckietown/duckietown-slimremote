@@ -121,7 +121,7 @@ def receive_data(socket_sub):
                "What I got from you was: '{}'".format(data)
         return False, data
 
-    topic = int(split[0]) # topic 0 means set action, topic 1 means get image
+    topic = int(split[0])  # topic 0 means set action, topic 1 means get image
     id = split[1]  # TODO: add ID sanity check here
     ip = split[2]  # TODO: add IP sanity check here
     msg = split[3]
@@ -142,7 +142,6 @@ def receive_data(socket_sub):
                        "0.5111,-0.7 or so 0.5111,-0.7,0,0.5,1".format(msg)
                 return False, data
 
-
         msg = [float(m) for m in msg]
 
         ### check for LED command sanity
@@ -151,8 +150,7 @@ def receive_data(socket_sub):
                 data = "The LED command has to be in range [0;1] " \
                        "on each RGB color channel. However I got the " \
                        "colors: {}".format(msg)
-                return False,data
-
+                return False, data
 
     return True, {"topic": topic, "id": id, "ip": ip, "msg": msg}
 
@@ -183,6 +181,20 @@ def recv_array(socket, flags=0, copy=True, track=False):
     buf = buffer(msg)
     A = np.frombuffer(buf, dtype=md['dtype'])
     return A.reshape(md['shape'])
+
+
+def send_img_reward(socket, img, reward, flags=0, copy=True, track=False):
+    send_array(socket, img, flags | zmq.SNDMORE, copy, track)
+    socket.send_string(str(reward), flags)
+
+
+def recv_img_reward(socket, flags=0, copy=True, track=False):
+    md = socket.recv_json(flags=flags)
+    msg = socket.recv(flags=flags, copy=copy, track=track)
+    rew = float(socket.recv_string(flags=flags))
+    buf = buffer(msg)
+    A = np.frombuffer(buf, dtype=md['dtype'])
+    return (A.reshape(md['shape']), rew)
 
 
 def construct_action(id, ip=None, action=None):

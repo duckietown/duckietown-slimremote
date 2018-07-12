@@ -24,16 +24,16 @@ class RemoteRobot():
 
         # run action on robot
         self.robot_sock.send_string(msg)
-        print("sent action:",msg)
+        print("sent action:", msg)
 
         # return last known camera image #FIXME: this must be non-blocking and re-send ping if necessary
         if with_observation:
-            return self.cam.get_img_nonblocking()
+            return self.cam.get_img_reward_nonblocking()
         else:
             return None
 
     def observe(self):
-        return self.cam.get_img_nonblocking()
+        return self.cam.get_img_reward_nonblocking()
 
     def reset(self):
         # This purposefully doesn't do anything on the real robot (other than halt).
@@ -49,6 +49,8 @@ class KeyboardControlledRobot():
 
         self.history = []
 
+        self.last_obs = None
+
         frame = tkinter.Frame(self.rootwindow, width=1, height=1)
         frame.bind("<KeyPress>", self.keydown)
         frame.bind("<KeyRelease>", self.keyup)
@@ -56,14 +58,14 @@ class KeyboardControlledRobot():
 
         # Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
 
-        im = Image.fromarray(np.zeros((160,120,3),dtype=np.uint8))
+        im = Image.fromarray(np.zeros((160, 120, 3), dtype=np.uint8))
         self.img = ImageTk.PhotoImage(im)
         self.panel = tkinter.Label(self.rootwindow, image=self.img)
 
         # The Pack geometry manager packs widgets in rows or columns.
         self.panel.pack(side="bottom", fill="both", expand="yes")
 
-        self.robot.step([0,0], with_observation=False) # init socket if it isn't
+        self.robot.step([0, 0], with_observation=False)  # init socket if it isn't
 
         frame.focus_set()
         self.rootwindow.after(200, self.updateImg)
@@ -71,11 +73,14 @@ class KeyboardControlledRobot():
 
     def updateImg(self):
         self.rootwindow.after(200, self.updateImg)
-        obs = self.robot.observe()
+        obs, rew = self.robot.observe()
         if obs is not None:
             img2 = ImageTk.PhotoImage(Image.fromarray(obs))
             self.panel.configure(image=img2)
             self.panel.image = img2
+            if not (self.last_obs == obs).all():
+                print("reward: ", rew)
+                self.last_obs = obs
 
         return
 
@@ -115,22 +120,21 @@ class KeyboardControlledRobot():
 
     def keysToAction(self):
         # mac / lin keycodes
-        action = np.array([0,0])
-        if self._key_up() and self._key_right(): # UP/RIGHT
+        action = np.array([0, 0])
+        if self._key_up() and self._key_right():  # UP/RIGHT
             action = np.array([1, .4])
-        elif self._key_up() and self._key_left(): # UP/LEFT
+        elif self._key_up() and self._key_left():  # UP/LEFT
             action = np.array([.4, 1])
-        elif self._key_down() and self._key_right(): # DOWN/RIGHT
+        elif self._key_down() and self._key_right():  # DOWN/RIGHT
             action = np.array([-1, -.4])
-        elif self._key_down() and self._key_left(): # DOWN/LEFT
+        elif self._key_down() and self._key_left():  # DOWN/LEFT
             action = np.array([-.4, -1])
-        elif self._key_up(): # UP
-            action = np.array([.7,.7])
-        elif self._key_right(): # RIGHT
-            action = np.array([.4,.0])
-        elif self._key_down(): # DOWN
-            action = np.array([-.4,-.4])
-        elif self._key_left(): # LEFT
-            action = np.array([0,.4])
+        elif self._key_up():  # UP
+            action = np.array([.7, .7])
+        elif self._key_right():  # RIGHT
+            action = np.array([.4, .0])
+        elif self._key_down():  # DOWN
+            action = np.array([-.4, -.4])
+        elif self._key_left():  # LEFT
+            action = np.array([0, .4])
         return action
-

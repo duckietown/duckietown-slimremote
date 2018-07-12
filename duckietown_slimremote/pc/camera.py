@@ -5,11 +5,12 @@ from threading import Thread
 import numpy as np
 import zmq
 import matplotlib
-matplotlib.use('TkAgg') #needed for tkinter GUI
+
+matplotlib.use('TkAgg')  # needed for tkinter GUI
 import matplotlib.pyplot as plt
 
 from duckietown_slimremote.helpers import timer
-from duckietown_slimremote.networking import make_sub_socket, recv_array
+from duckietown_slimremote.networking import make_sub_socket, recv_array, recv_img_reward
 
 
 class ThreadedSubCamera(Thread):
@@ -28,13 +29,13 @@ class ThreadedSubCamera(Thread):
         timings = []
         start = time.time()
         while keep_running:
-            img = recv_array(self.sock)
+            img, rew = recv_img_reward(self.sock)
 
             timings, start = timer(timings, start)
 
             if not self.queue.empty():
                 self.queue.get()  # discard last img, only ever keep one
-            self.queue.put(img)
+            self.queue.put((img, rew))
 
 
 class SubCameraMaster():
@@ -45,17 +46,16 @@ class SubCameraMaster():
         self.cam_thread.daemon = True
         self.cam_thread.start()
         self.last_img = None
+        self.last_rew = None
 
-    def get_img_blocking(self):
-        self.last_img = self.queue.get(block=True)  # wait for image, blocking
-        return self.last_img
+    def get_img_reward_blocking(self):
+        self.last_img, self.last_rew = self.queue.get(block=True)  # wait for image, blocking
+        return (self.last_img, self.last_rew)
 
-    def get_img_nonblocking(self):
+    def get_img_reward_nonblocking(self):
         if not self.queue.empty():
-            self.last_img = self.queue.get(block=False)  # TO TEST: might fail
-            return self.last_img
-        else:
-            return self.last_img # use cached img
+            self.last_img, self.last_rew = self.queue.get(block=False)  # TO TEST: might fail
+        return (self.last_img, self.last_rew)
 
 
 def cam_window_init():
@@ -80,5 +80,5 @@ def cam_windows_init_opencv(res=(160, 120, 3)):
 
 
 def cam_windows_update_opencv(img):
-    cv2.imshow('livecam', img[:,:,::-1])
+    cv2.imshow('livecam', img[:, :, ::-1])
     cv2.waitKey(1)
