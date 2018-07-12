@@ -1,3 +1,12 @@
+## Docker version (if you Duckiebot is running HypriotOS/DuckieOS)
+
+Run this on the duckiebot:
+
+    docker run -dit --privileged duckietown/duckietown-slimremote-robot
+
+...to start the motor command/image server. TODO: more documentation on the remote side of this, i.e. how does somebody connect to this docker?
+
+
 ## Install
 
 **On the robot:**
