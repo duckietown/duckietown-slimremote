@@ -5,7 +5,8 @@ import numpy as np
 import zmq
 import matplotlib
 
-matplotlib.use('TkAgg')  # needed for tkinter GUI
+# matplotlib.use('TkAgg')  # needed for tkinter GUI
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from duckietown_slimremote.helpers import timer
