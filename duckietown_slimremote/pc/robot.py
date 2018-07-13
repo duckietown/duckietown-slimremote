@@ -1,7 +1,4 @@
-import tkinter
 import numpy as np
-from PIL import ImageTk, Image
-
 from duckietown_slimremote.helpers import random_id
 from duckietown_slimremote.networking import make_push_socket, construct_action, RESET
 from duckietown_slimremote.pc.camera import SubCameraMaster
@@ -43,6 +40,10 @@ class RemoteRobot():
 
 class KeyboardControlledRobot():
     def __init__(self, host):
+        # this is a bit nasty, but we only need to import this when the keyboard controller is needed
+        import tkinter
+        from PIL import ImageTk, Image
+
         self.robot = RemoteRobot(host)
 
         self.rootwindow = tkinter.Tk()
