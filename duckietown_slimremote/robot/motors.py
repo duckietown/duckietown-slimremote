@@ -29,6 +29,15 @@ def normalize_speed(denorm):
     return shifted
 
 
+def _inverse_kinematics(v, omega):
+    # TODO
+
+    # very shitty temporary solution
+    v_left = v
+    v_right = omega
+    return (v_left, v_right)
+
+
 def _clip_normalized_speed(speed):
     _speed = float(speed)
     return max(min(_speed, 1), -1)
@@ -134,6 +143,11 @@ class Controller():
     def stop(self):
         self.list_action([0, 0])
 
+    def ik_action(self, v, omega):
+        ik = _inverse_kinematics(v, omega)
+        self.list_action(ik)
+        return ik
+
 
 def make_async_controller(base):
     """ allows to instantiate the motor controller as thread or as process
@@ -161,12 +175,12 @@ def make_async_controller(base):
                         self.robot.list_action([0, 0])
                         self.robot.rgb_off()
                     else:
-                        self.robot.list_action(action[:2])
+                        ik = self.robot.ik_action(action[:2])
                         if len(action) == 5:
                             self.robot.rgb_action(action[2:])
 
                         self.last_action_time = time.time()
-                        self.last_action = action
+                        self.last_action = ik
 
                 else:
                     # check if it's time to break

@@ -7,10 +7,11 @@ In addition to this documentation please also look at the networking code in
 
 The robot/sim side opens a PULL socket on start (`zmq.PULL`), on port `5558`, that is listening to single line strings from all IP addresses.
 
-There are two possible messages types for the PUSH/PULL socket:
+There are three possible messages types for the PUSH/PULL socket:
 
 1. Ping/"heartbeat" messages (`topic = 0`), to introduce the  image subscriber and start the camera (if not already done). This is mandatory at the very beginning of every program that controls or observes the robot in order to make sure the PC will receive images.  
 2. Action messages (`topic = 1`), to send a single motor command. 
+3. Reset messages (`topic = 2`), to reset the simulation (this only works in simulation - on the real robot if this command is issued, nothing happens).
 
 Neither of these two messages have a response from the robot/sim server. The result of the ping message is that the PC will from now on receive images. The result of the action message is that the robot/sim will start moving. Therefore the ping should always be the first step in establishing a connection from the PC side.
 
@@ -58,19 +59,48 @@ where
     values) or a motor command combined with an LED command 
     (five floating points values). All these floating point 
     values are separated by comma. The motor part is always 
-    in range[-1,1] and corresponds to the speed of the left 
-    and right motor. The LED part (last 3 floats) are in 
-    range [0;1] and correspond to the color channels red, 
-    green, and blue if the use wants to include them. 
+    in range[-1,1] and corresponds to the velocity of the 
+    vehicle and the steering angleThe LED part (last 3 
+    floats) are in range [0;1] and correspond to the color
+    channels red, green, and blue if the use wants to
+    include them. 
     
 Example:
 
     "1 1337 192.168.1.15 -0.54,0.333333"
-    (doesn't include LED values)
+    (doesn't include LED values) means go backwards at half speed and slightly turn left
     
     "1 1337 192.168.1.15 -0.54,0.3,0,0.55,1"
     (which does include LED values, corresponding to
     0 parts red, 0.55 parts green and 1 part blue) 
+
+#### Reset message structure
+
+Each **reset** message has the following format:
+
+    "2 X Y 0"
+    
+where (same as for ping message)
+
+    X = PC identifier "ID": random integer in range 
+        [0,99999], not zero-buffered.
+        This value is randomly chosen by the PC 
+        upon initiating the connection. There is currently no
+        big importance to this number but it can
+        be used to identify concurrent connections
+        from the same host.
+    Y = IP address of the PC - currently IPv4.
+    
+    The leading "2" indicates that this is a reset message
+    The trailing "0" indicates that this message doesn't
+    have an action payload (i.e. motor commands).
+    
+Example:
+
+    "2 1337 192.168.1.15 0"
+    
+
+
     
 #### Images/Observations
 

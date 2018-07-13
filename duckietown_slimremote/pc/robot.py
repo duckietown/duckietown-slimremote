@@ -135,21 +135,21 @@ class KeyboardControlledRobot():
         # mac / lin keycodes
         action = np.array([0, 0])
         if self._key_up() and self._key_right():  # UP/RIGHT
-            action = np.array([1, .4])
+            action = np.array([1, -1])
         elif self._key_up() and self._key_left():  # UP/LEFT
-            action = np.array([.4, 1])
+            action = np.array([1, +1])
         elif self._key_down() and self._key_right():  # DOWN/RIGHT
-            action = np.array([-1, -.4])
+            action = np.array([-1, +1])
         elif self._key_down() and self._key_left():  # DOWN/LEFT
-            action = np.array([-.4, -1])
+            action = np.array([-1, -1])
         elif self._key_up():  # UP
-            action = np.array([.7, .7])
+            action = np.array([.7, 0])
         elif self._key_right():  # RIGHT
-            action = np.array([.4, .0])
+            action = np.array([.6, -1])
         elif self._key_down():  # DOWN
-            action = np.array([-.4, -.4])
+            action = np.array([-.4, 0])
         elif self._key_left():  # LEFT
-            action = np.array([0, .4])
+            action = np.array([.6, +1])
 
         if self._key_reset():
             action = [RESET]
