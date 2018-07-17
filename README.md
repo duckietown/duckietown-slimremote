@@ -1,11 +1,14 @@
 ## Docker version (if you Duckiebot is running HypriotOS/DuckieOS)
 
-Run this on the duckiebot:
+To build the image locally (i.e. on an x86 laptop), run this command:
+
+    docker build --file docker/robot/Dockerfile --tag duckietown-slimremote .
+
+Run this on the Duckiebot to start the motor command and image server:
 
     docker run -dit --privileged duckietown/duckietown-slimremote-robot
 
-...to start the motor command/image server. TODO: more documentation on the remote side of this, i.e. how does somebody connect to this docker?
-
+TODO: more documentation on the remote side of this, i.e. how does somebody connect to this docker?
 
 ## Install
 
