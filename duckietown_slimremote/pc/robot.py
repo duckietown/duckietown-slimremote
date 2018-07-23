@@ -8,9 +8,19 @@ class RemoteRobot():
     def __init__(self, host):
         self.host = host
 
+        # Create a somewhat random ID for this connection.
+        # The randomness isn't super important since there
+        # will only ever be 1-2 clients connected to the same
+        # server
         self.id = random_id()
+
+        # Construct a "hello world" messag
         self.ping_msg = construct_action(self.id)
+
+        # Initialize the PUSH socket
         self.robot_sock = make_push_socket(host)
+
+        # Send the initialization string.
         self.robot_sock.send_string(self.ping_msg)
 
         self.cam = SubCameraMaster(host)
