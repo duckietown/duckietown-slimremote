@@ -31,7 +31,7 @@ class RemoteRobot():
 
         # run action on robot
         self.robot_sock.send_string(msg)
-        print("sent action:", msg)
+        # print("sent action:", msg)
 
         # return last known camera image #FIXME: this must be non-blocking and re-send ping if necessary
         if with_observation:
@@ -45,7 +45,7 @@ class RemoteRobot():
     def reset(self):
         msg = construct_action(self.id, action=RESET)
         self.robot_sock.send_string(msg)
-        print("sent reset")
+        # print("sent reset")
 
 
 class KeyboardControlledRobot():
