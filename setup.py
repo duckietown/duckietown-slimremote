@@ -22,7 +22,7 @@ if IS_RPI:
 
 setup(
     name='duckietown_slimremote',
-    version='2018.08.1',
+    version='2018.8.1',
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
