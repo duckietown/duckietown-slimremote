@@ -1,3 +1,4 @@
+import ast
 from queue import Queue
 from threading import Thread
 
@@ -184,21 +185,30 @@ def recv_array(socket, flags=0, copy=True, track=False):
     return A.reshape(md['shape'])
 
 
-def send_gym(socket, img, reward, done, flags=0, copy=True, track=False):
+def send_gym(socket, img, reward, done, misc=None, flags=0, copy=True, track=False):
+    if misc is None:
+        misc = {"challenge": None}
+
     send_array(socket, img, flags | zmq.SNDMORE, copy, track)
     socket.send_string(str(reward), flags | zmq.SNDMORE)
-    return socket.send_string(str(done), flags)
+    socket.send_string(str(done), flags | zmq.SNDMORE)
+    return socket.send_string(str(misc), flags)
 
 
 def recv_gym(socket, flags=0, copy=True, track=False):
     md = socket.recv_json(flags=flags)
     msg = socket.recv(flags=flags, copy=copy, track=track)
     rew = float(socket.recv_string(flags=flags))
+
     done = socket.recv_string(flags=flags)
     done = (done == "True")
+
+    misc = socket.recv_string(flags=flags)
+    misc = ast.literal_eval(misc)
+
     buf = buffer(msg)
     A = np.frombuffer(buf, dtype=md['dtype'])
-    return (A.reshape(md['shape']), rew, done)
+    return (A.reshape(md['shape']), rew, done, misc)
 
 
 def construct_action(id, ip=None, action=None):

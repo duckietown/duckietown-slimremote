@@ -29,13 +29,13 @@ class ThreadedSubCamera(Thread):
         timings = []
         start = time.time()
         while keep_running:
-            img, rew, done = recv_gym(self.sock)
+            img, rew, done, misc = recv_gym(self.sock)
 
             timings, start = timer(timings, start)
 
             if not self.queue.empty():
                 self.queue.get()  # discard last img, only ever keep one
-            self.queue.put((img, rew, done))
+            self.queue.put((img, rew, done, misc))
 
 
 class SubCameraMaster():
@@ -50,15 +50,16 @@ class SubCameraMaster():
         self.last_img = None
         self.last_rew = None
         self.last_done = None
+        self.last_misc = None
 
     def get_gym_blocking(self):
-        self.last_img, self.last_rew, self.last_done = self.queue.get(block=True)  # wait for image, blocking
-        return (self.last_img, self.last_rew, self.last_done)
+        self.last_img, self.last_rew, self.last_done, self.last_misc = self.queue.get(block=True)  # wait for image, blocking
+        return (self.last_img, self.last_rew, self.last_done, self.last_misc)
 
     def get_gym_nonblocking(self):
         if not self.queue.empty():
-            self.last_img, self.last_rew, self.last_done = self.queue.get(block=False)  # TO TEST: might fail
-        return (self.last_img, self.last_rew, self.last_done)
+            self.last_img, self.last_rew, self.last_done, self.last_misc = self.queue.get(block=False)  # TO TEST: might fail
+        return (self.last_img, self.last_rew, self.last_done, self.last_misc)
 
 
 def cam_window_init():
