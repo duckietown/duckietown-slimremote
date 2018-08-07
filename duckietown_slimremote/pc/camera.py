@@ -1,6 +1,6 @@
 import time
-from queue import Queue, LifoQueue
-from threading import Thread
+from threading import Event, Thread
+
 import numpy as np
 import zmq
 import matplotlib
@@ -8,58 +8,65 @@ import matplotlib
 # matplotlib.use('TkAgg')  # needed for tkinter GUI
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-
-from duckietown_slimremote.helpers import timer
+from duckietown_slimremote.helpers import timer, Frame
 from duckietown_slimremote.networking import make_sub_socket, recv_gym
 
 
 class ThreadedSubCamera(Thread):
-    def __init__(self, queue, host):
-        Thread.__init__(self)
-        context = zmq.Context.instance()
-        self.queue = queue
+    def __init__(self, frame, event_img, event_ready, host, silent=False):
+        super().__init__()
+        self.silent = silent
+        self.frame = frame
+        self.event_img = event_img
+        self.event_ready = event_ready
+
+        context = zmq.Context()
         self.sock = make_sub_socket(for_images=True, context_=context, target=host)
 
     def run(self):
         # block while waiting for image
-        # put image into queue
+        # put image into shared memory
 
         keep_running = True
-        print("listening for camera images")
         timings = []
         start = time.time()
         while keep_running:
+            self.event_ready.set() # we basically only need this once
+
             img, rew, done, misc = recv_gym(self.sock)
 
-            timings, start = timer(timings, start)
+            np.copyto(self.frame.obs, img)
+            self.frame.rew = rew
+            self.frame.done = done
+            self.frame.misc.update(misc)
+            self.event_img.set()
 
-            if not self.queue.empty():
-                self.queue.get()  # discard last img, only ever keep one
-            self.queue.put((img, rew, done, misc))
+            if not self.silent:
+                timings, start = timer(timings, start)
 
 
 class SubCameraMaster():
     # controls and communicates with the threaded sub camera
-    def __init__(self, host):
-        self.queue = LifoQueue(2)
-        self.cam_thread = ThreadedSubCamera(self.queue, host)
+    def __init__(self, host, silent=False):
+        self.frame = Frame()
+        self.event_img = Event()
+        self.event_ready = Event()
+
+        self.cam_thread = ThreadedSubCamera(self.frame, self.event_img, self.event_ready, host, silent=silent)
         self.cam_thread.daemon = True
         self.cam_thread.start()
 
-        # need caching for non-blocking calls (in case the server has a hickup)
-        self.last_img = None
-        self.last_rew = None
-        self.last_done = None
-        self.last_misc = None
+    def get_cached_observation(self):
+        return self.frame.to_gym()
 
-    def get_gym_blocking(self):
-        self.last_img, self.last_rew, self.last_done, self.last_misc = self.queue.get(block=True)  # wait for image, blocking
-        return (self.last_img, self.last_rew, self.last_done, self.last_misc)
+    def get_new_observation(self):
+        self.event_img.wait()
+        self.event_img.clear()
 
-    def get_gym_nonblocking(self):
-        if not self.queue.empty():
-            self.last_img, self.last_rew, self.last_done, self.last_misc = self.queue.get(block=False)  # TO TEST: might fail
-        return (self.last_img, self.last_rew, self.last_done, self.last_misc)
+        return self.get_cached_observation()
+
+    def wait_until_ready(self):
+        self.event_ready.wait()
 
 
 def cam_window_init():
@@ -76,7 +83,6 @@ def cam_window_update(img, img_container, img_window):
     img_container.set_data(img)
     img_window.plot([0])
     plt.pause(0.001)
-
 
 # def cam_windows_init_opencv(res=(160, 120, 3)):
 #     import cv2

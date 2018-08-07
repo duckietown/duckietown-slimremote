@@ -5,8 +5,9 @@ from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
 class RemoteRobot():
-    def __init__(self, host):
+    def __init__(self, host, silent=False):
         self.host = host
+        self.silent = silent
 
         # Create a somewhat random ID for this connection.
         # The randomness isn't super important since there
@@ -23,7 +24,10 @@ class RemoteRobot():
         # Send the initialization string.
         self.robot_sock.send_string(self.ping_msg)
 
-        self.cam = SubCameraMaster(host)
+        self.cam = SubCameraMaster(host, silent=self.silent)
+
+        # We have to wait for the thread to launch
+        self.cam.wait_until_ready()
 
     def step(self, action, with_observation=True):
         assert len(action) == 2 or len(action) == 5
@@ -35,12 +39,16 @@ class RemoteRobot():
 
         # return last known camera image #FIXME: this must be non-blocking and re-send ping if necessary
         if with_observation:
-            return self.cam.get_gym_nonblocking()
+            return self.cam.get_new_observation()
         else:
             return None
 
     def observe(self):
-        return self.cam.get_gym_nonblocking()
+        """ returns the last observation
+
+        :return:
+        """
+        return self.cam.get_cached_observation()
 
     def reset(self):
         msg = construct_action(self.id, action=RESET)
