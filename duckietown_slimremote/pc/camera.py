@@ -31,7 +31,7 @@ class ThreadedSubCamera(Thread):
         timings = []
         start = time.time()
         while keep_running:
-            self.event_ready.set() # we basically only need this once
+            self.event_ready.set()  # we basically only need this once
 
             img, rew, done, misc = recv_gym(self.sock)
 
@@ -60,13 +60,16 @@ class SubCameraMaster():
         return self.frame.to_gym()
 
     def get_new_observation(self):
-        self.event_img.wait()
+        self.event_img.wait(timeout=3)  # 3 second timeout, if no response we send action again
         self.event_img.clear()
 
         return self.get_cached_observation()
 
     def wait_until_ready(self):
         self.event_ready.wait()
+
+    def empty_cache(self):
+        np.copyto(dst=self.frame.obs, src=np.zeros((120, 160, 3), dtype=np.uint8))
 
 
 def cam_window_init():
