@@ -14,7 +14,7 @@ from duckietown_slimremote.networking import make_sub_socket, recv_gym
 
 class ThreadedSubCamera(Thread):
     def __init__(self, frame, event_img, event_ready, host, silent=False):
-        super().__init__()
+        super(ThreadedSubCamera, self).__init__()
         self.silent = silent
         self.frame = frame
         self.event_img = event_img
