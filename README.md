@@ -1,16 +1,33 @@
-## Docker version (if your Duckiebot is running HypriotOS/DuckieOS):
+# duckietown-slimremote
 
-To build the image locally (i.e. on an x86 laptop), run this command:
+The duckietown-slimremote is a slim control interface for teleoperating a Duckiebot. It relays control inputs from a laptop to the Duckiebot and publishes images from the Duckiebot's onboard camera to a graphical user interface.
 
-    docker build --file docker/robot/Dockerfile --tag duckietown-slimremote .
+This library is integrated in the following applications:
 
-Run this on the Duckiebot to start the motor command and image server:
+* [duckietown/gym-duckietown-agent](https://github.com/duckietown/gym-duckietown-agent)
+* [duckietown/duckie-ros](https://github.com/duckietown/duckie-ros)
+
+If you have them already, you should not need this repository. If you want to develop an application using duckietown/duckietown-slimremote, fork or clone this repository:
+
+    git clone https://github.com/duckietown/duckietown-slimremote.git && cd duckietown-slimremote
+
+## Docker
+
+If your Duckiebot is running HypriotOS/DuckieOS, you can run duckietown-slimremote in a Docker container.
+
+The following command will start the motor contoller and image server:
 
     docker run -dit --privileged duckietown/duckietown-slimremote-robot
 
+### Building 
+
+To build the image locally (i.e. on an x86 laptop), run the following command from the project root directory:
+
+    docker build --file docker/robot/Dockerfile --tag duckietown-slimremote .
+    
 TODO: more documentation on the remote side of this, i.e. how does somebody connect to this docker?
 
-## Install
+## Manual Installation
 
 **On the robot:**
 
@@ -34,7 +51,9 @@ You quit the robot controller via <kbd>CTRL</kbd>+<kbd>c</kbd>.
 
 To run duckietown-slimremote on a PC or Mac, use the same installation procedure as the robot, but the OpenCV version is not important and the standard package manager should suffice (e.g. on Mac OS you can use `brew install opencv3 --with-contrib --with-python3 --without-python` for Python 3 bindings).
 
-Afterwards you can run:
+## Running
+
+To launch duckietown-slimremote, run the following command from the project root directory:
 
     python3 tests/12-test-keyboard-controller.py
     
@@ -56,6 +75,6 @@ Returns the last seen observation without taking an action. Like `step(action, w
 
 Stops the robot (sends a `[0,0]` action).
 
-## Communication & Architecture
+# Communication & Architecture
 
 ![image depicting the different components and how they interact](doc/overview.png "Architecture Overview")
