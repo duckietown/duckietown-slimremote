@@ -1,12 +1,20 @@
-FROM resin/raspberrypi3-python:3.4
+FROM resin/raspberrypi3-alpine-python:3.4-slim
 
 RUN [ "cross-build-start" ]
 
-RUN pip3 install opencv-python opencv-contrib-python --index-url https://www.piwheels.org/simple
+RUN pip3 install --index-url https://www.piwheels.org/simple \
+    opencv-contrib-python \
+    opencv-python \
+    pyzmq 
 
-COPY . duckietown-slimremote
+WORKDIR duckietown-slimremote
 
-RUN pip3 install -e duckietown-slimremote/
+COPY . .
+
+RUN apk --no-cache add gcc && \
+    pip3 install -e . && \
+    apk del gcc && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN [ "cross-build-end" ]
 

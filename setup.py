@@ -11,14 +11,13 @@ if os.path.isfile(rpi_model_file):
             IS_RPI = True
 
 install_requires = [
-    # 'gym>=0.2.3',
     'numpy',
     'zmq'
 ]
 
 if IS_RPI:
     install_requires.append('Adafruit-MotorHAT')  # for controlling the motors
-    # install_requires.append('cv2')  # for high speed image capturing # this has to be compiled by hand on the rpi
+    # install_requires.append('cv2')  # for high speed image capturing
 
 setup(
     name='duckietown_slimremote',
