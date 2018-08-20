@@ -13,13 +13,13 @@ If your Duckiebot is running HypriotOS/DuckieOS, you can run duckietown-slimremo
 
 The following command will start the motor contoller and image server:
 
-    docker run -dit --privileged duckietown/duckietown-slimremote-robot
+    docker run -dit --privileged duckietown/duckietown-slimremote
 
 ### Building 
 
 To build the image locally (i.e. on an x86 laptop), run the following command from root directory of this project:
 
-    docker build --file docker/robot/Dockerfile --tag duckietown-slimremote .
+    docker build --file docker/robot/Dockerfile --tag duckietown/duckietown-slimremote .
     
 TODO: more documentation on the remote side of this, i.e. how does somebody connect to this docker?
 
@@ -69,6 +69,6 @@ Returns the last seen observation without taking an action. Like `step(action, w
 
 Stops the robot (sends a `[0,0]` action).
 
-# Communication & Architecture
+## Communication & Architecture
 
 ![image depicting the different components and how they interact](doc/overview.png "Architecture Overview")
