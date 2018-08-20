@@ -5,8 +5,9 @@ from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
 class RemoteRobot():
-    def __init__(self, host):
+    def __init__(self, host, silent=False):
         self.host = host
+        self.silent = silent
 
         # Create a somewhat random ID for this connection.
         # The randomness isn't super important since there
@@ -20,14 +21,25 @@ class RemoteRobot():
         # Initialize the PUSH socket
         self.robot_sock = make_push_socket(host)
 
+        self.cam = SubCameraMaster(host, silent=self.silent)
+
+        # We have to wait for the thread to launch
+        self.cam.wait_until_ready()
+
+        # say hi to the robot
+        self._ping()
+
+    def _ping(self):
         # Send the initialization string.
         self.robot_sock.send_string(self.ping_msg)
-
-        self.cam = SubCameraMaster(host)
 
     def step(self, action, with_observation=True):
         assert len(action) == 2 or len(action) == 5
         msg = construct_action(self.id, action=action)
+
+        # before we send an action, we zero the last
+        # observation to prevent caching errors
+        self.cam.empty_cache()
 
         # run action on robot
         self.robot_sock.send_string(msg)
@@ -35,12 +47,38 @@ class RemoteRobot():
 
         # return last known camera image #FIXME: this must be non-blocking and re-send ping if necessary
         if with_observation:
-            return self.cam.get_gym_nonblocking()
+            return self._failsafe_observe(msg)
         else:
             return None
 
+    def _failsafe_observe(self, msg):
+        """ This function is there to deal with the simulator not being ready
+        which sometimes happens right after the start. This function gives
+        the simulator server two times 3s to come up with a response.
+
+        :param msg: the action message that was sent to the server
+                    in case we need to send it again
+        """
+
+        obs, rew, done, misc = self.cam.get_new_observation()
+
+        if np.count_nonzero(obs) == 0:
+            # then the simulator probably wasn't ready
+            # and we send the action again
+            self.robot_sock.send_string(msg)
+            obs, rew, done, misc = self.cam.get_new_observation()
+            if np.count_nonzero(obs) == 0:
+                # if this happens twice then we can assume the server is offline
+                raise Exception("Can't connect to the gym-duckietown-server")
+
+        return obs, rew, done, misc
+
     def observe(self):
-        return self.cam.get_gym_nonblocking()
+        """ returns the last observation
+
+        :return:
+        """
+        return self.cam.get_cached_observation()
 
     def reset(self):
         msg = construct_action(self.id, action=RESET)
@@ -103,7 +141,6 @@ class KeyboardControlledRobot():
         # but also the real robot should break automatically
 
         # self.moveRobot()
-
 
     def moveRobot(self):
         action = self.keysToAction()
