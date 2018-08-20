@@ -7,10 +7,6 @@ This library is integrated in the following applications:
 * [duckietown/gym-duckietown-agent](https://github.com/duckietown/gym-duckietown-agent)
 * [duckietown/duckie-ros](https://github.com/duckietown/duckie-ros)
 
-If you have them already, you should not need this repository. If you want to develop an application using duckietown/duckietown-slimremote, fork or clone this repository:
-
-    git clone https://github.com/duckietown/duckietown-slimremote.git && cd duckietown-slimremote
-
 ## Docker
 
 If your Duckiebot is running HypriotOS/DuckieOS, you can run duckietown-slimremote in a Docker container.
@@ -21,7 +17,7 @@ The following command will start the motor contoller and image server:
 
 ### Building 
 
-To build the image locally (i.e. on an x86 laptop), run the following command from the project root directory:
+To build the image locally (i.e. on an x86 laptop), run the following command from root directory of this project:
 
     docker build --file docker/robot/Dockerfile --tag duckietown-slimremote .
     
@@ -31,25 +27,23 @@ TODO: more documentation on the remote side of this, i.e. how does somebody conn
 
 **On the robot:**
 
-First you need to compile the most recent version of OpenCV: https://raspberrypi.stackexchange.com/questions/69169/how-to-install-opencv-on-raspberry-pi-3-in-raspbian-jessie
+First you need to compile the [most recent version of OpenCV](https://raspberrypi.stackexchange.com/questions/69169/how-to-install-opencv-on-raspberry-pi-3-in-raspbian-jessie).
 
-After that clone and install the repo:
+After that, clone and install this repo:
 
-    git clone https://github.com/duckietown/duckietown-slimremote.git
-    
-    cd duckietown-slimremote
-    
-    sudo pip3 install -e . # install in developer mode
+    git clone https://github.com/duckietown/duckietown-slimremote.git && \
+    cd duckietown-slimremote && \
+    sudo pip3 install -e . # Install to root user in developer mode
     
 Once the repo is installed you can start the robot controller:
 
     duckietown-start-robot2
     
-You quit the robot controller via <kbd>CTRL</kbd>+<kbd>c</kbd>.
+To quit the robot controller, press <kbd>Ctrl</kbd>+<kbd>c</kbd>.
     
 **On the PC:**
 
-To run duckietown-slimremote on a PC or Mac, use the same installation procedure as the robot, but the OpenCV version is not important and the standard package manager should suffice (e.g. on Mac OS you can use `brew install opencv3 --with-contrib --with-python3 --without-python` for Python 3 bindings).
+To run duckietown-slimremote on a PC or Mac, use the same installation procedure as the robot, however the OpenCV version is not important and the standard package manager should suffice (e.g. on Mac OS you can use `brew install opencv3 --with-contrib --with-python3 --without-python` for Python 3 bindings).
 
 ## Running
 
