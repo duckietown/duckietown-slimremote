@@ -1,5 +1,7 @@
 # duckietown-slimremote
 
+[![Docker Hub](https://img.shields.io/docker/pulls/duckietown/duckietown-slimremote.svg)](https://hub.docker.com/r/duckietown/duckietown-slimremote)
+
 The duckietown-slimremote is a slim control interface for teleoperating a Duckiebot. It relays control inputs from a laptop to the Duckiebot and publishes images from the Duckiebot's onboard camera to a graphical user interface.
 
 This library is integrated in the following applications:
