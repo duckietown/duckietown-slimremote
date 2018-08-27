@@ -83,6 +83,8 @@ class RemoteRobot():
     def reset(self):
         msg = construct_action(self.id, action=RESET)
         self.robot_sock.send_string(msg)
+        obs, _, _, _ = self.observe()
+        return obs
         # print("sent reset")
 
 
