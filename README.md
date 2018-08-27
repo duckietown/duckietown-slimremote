@@ -6,6 +6,7 @@ The duckietown-slimremote is a slim control interface for teleoperating a Duckie
 
 This library is integrated in the following applications:
 
+* [duckietown/gym-duckietown](https://github.com/duckietown/gym-duckietown)
 * [duckietown/gym-duckietown-agent](https://github.com/duckietown/gym-duckietown-agent)
 * [duckietown/duckie-ros](https://github.com/duckietown/duckie-ros)
 
