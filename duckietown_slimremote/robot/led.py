@@ -4,7 +4,7 @@
 #
 
 
-class RGB_LED():
+class RGB_LED:
     OFFSET_RED = 0
     OFFSET_GREEN = 1
     OFFSET_BLUE = 2
@@ -48,7 +48,7 @@ FRONT_LEFT = 'fl'
 FRONT_RIGHT = 'fr'
 
 
-class DuckietownLights():
+class DuckietownLights:
     # Configuration (calibration) - needs to be in a yaml.file
     name2port = {
         TOP: 2,

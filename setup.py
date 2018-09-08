@@ -1,5 +1,6 @@
 # Adafruit-MotorHAT
 import os
+
 from setuptools import setup
 
 IS_RPI = False

@@ -1,18 +1,21 @@
 import time
-from queue import Queue
-from duckietown_slimremote.robot.camera import Camera
-from duckietown_slimremote.robot.constants import MAX_WAIT, INACTIVE_CLEANUP_TIMER
+
+import numpy as np
+
 from duckietown_slimremote.helpers import select_action, remove_inactive, get_py_version
-from duckietown_slimremote.robot.motors import Controller, FailsafeController
 from duckietown_slimremote.networking import make_pub_socket, send_array, \
     ThreadedActionSubscriber, start_thread_w_queue, get_last_queue_element
-import numpy as np
+from duckietown_slimremote.robot.camera import Camera
+from duckietown_slimremote.robot.constants import MAX_WAIT, INACTIVE_CLEANUP_TIMER
+from duckietown_slimremote.robot.motors import Controller, FailsafeController
+
 print(get_py_version())
 
 
 def stop():
     ctrl = Controller()
     ctrl.stop()
+
 
 def main():
     print("Launching Duckie Slimremote Robot Server...")
@@ -22,7 +25,6 @@ def main():
 
     robot = FailsafeController()
     cam = Camera()
-
 
     subscriber_queue = start_thread_w_queue(ThreadedActionSubscriber)
     sockets_pub = []
@@ -96,7 +98,7 @@ def main():
 
             timer_obs = time.time()
             observation = cam.observe()
-            timer_obs_total.append(time.time()-timer_obs)
+            timer_obs_total.append(time.time() - timer_obs)
 
             timer_pub = time.time()
             for sock_pub in sockets_pub:
@@ -110,7 +112,7 @@ def main():
 
             timer2_counter += time.time() - timer2
 
-            if (counter+1) % timer2_tests == 0:
+            if (counter + 1) % timer2_tests == 0:
                 diff = timer2_counter / timer2_tests
                 print("msg speed: {}s/{}Hz".format(
                     round(diff, 4),
@@ -140,5 +142,3 @@ def main():
                     np.mean(timer_cln_total),
                 ))
                 timer_total_counter = 0
-
-

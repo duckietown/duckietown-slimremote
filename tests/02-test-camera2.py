@@ -6,11 +6,10 @@ from picamera.array import PiRGBArray
 camera = PiCamera()
 
 for format in ["bgr", "rgb"]:
-    for resolution in [(160, 128),(320, 240)]:
-        for framerate in range(30,100,10):
+    for resolution in [(160, 128), (320, 240)]:
+        for framerate in range(30, 100, 10):
             # resolution = (320, 240)
             # framerate = 80
-
 
             # print ("max framerate: ",camera.MAX_FRAMERATE)
             camera.resolution = resolution
@@ -37,16 +36,14 @@ for format in ["bgr", "rgb"]:
                 start = time.time()
 
             frametime = timings / tests
-            hz = 1/frametime
+            hz = 1 / frametime
             print("res:{}, framerate:{}, format:{}, avg {}s per frame, i.e. {}Hz".format(
                 resolution, framerate, format,
-                round(frametime,4), round(hz,4)))
+                round(frametime, 4), round(hz, 4)))
 
         frame = None
         stream = None
         rawCapture = None
-
-
 
 # res:(160, 128), framerate:30, format:bgr, avg 0.0334s per frame, i.e. 29.9217Hz
 # res:(160, 128), framerate:40, format:bgr, avg 0.0251s per frame, i.e. 39.9025Hz

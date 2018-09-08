@@ -2,8 +2,9 @@ import multiprocessing
 import random
 import sys
 import time
-import numpy as np
 from queue import Queue as ThreadQueue
+
+import numpy as np
 
 
 def get_py_version():
@@ -78,13 +79,13 @@ def get_right_queue(base):
     else:
         return ThreadQueue
 
+
 class Frame(object):
     def __init__(self):
-        self.obs = np.zeros((120,160,3),dtype=np.uint8)
+        self.obs = np.zeros((120, 160, 3), dtype=np.uint8)
         self.rew = 0
         self.done = False
         self.misc = {}
 
     def to_gym(self):
-        return (self.obs, self.rew, self.done, self.misc)
-
+        return self.obs, self.rew, self.done, self.misc

@@ -1,6 +1,5 @@
-from tkinter import Tk, StringVar, Label, Frame
-
 from PIL import ImageTk, Image
+from tkinter import Tk, Label, Frame
 
 root = Tk()
 

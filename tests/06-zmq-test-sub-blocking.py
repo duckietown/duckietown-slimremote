@@ -15,7 +15,7 @@ print("hello this is SUB", time.time())
 should_continue = True
 
 while should_continue:
-    print ("waiting...")
+    print("waiting...")
     string = socket_sub.recv_string()
     print("'{}'".format(string))
     topic, messagedata = string.split(" ")

@@ -6,11 +6,12 @@
 # http://crm.ii.uam.es/
 # License: Public Domain, attribution appreciated
 
-import cv2
-import numpy as np
+import atexit
 import subprocess as sp
 import time
-import atexit
+
+import cv2
+import numpy as np
 
 frames = []  # stores the video sequence for the demo
 max_frames = 600
@@ -30,7 +31,7 @@ fps = 250  # setting to 250 will request the maximum framerate possible
 videoCmd = "raspividyuv -w " + str(w) + " -h " + str(h) + " --output - --timeout 0 --framerate " + str(
     fps) + " --luma --nopreview"
 
-print (videoCmd)
+print(videoCmd)
 
 videoCmd = videoCmd.split()  # Popen requires that each parameter is a separate string
 

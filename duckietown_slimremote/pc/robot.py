@@ -1,10 +1,11 @@
 import numpy as np
+
 from duckietown_slimremote.helpers import random_id
 from duckietown_slimremote.networking import make_push_socket, construct_action, RESET
 from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
-class RemoteRobot():
+class RemoteRobot:
     def __init__(self, host, silent=False):
         self.host = host
         self.silent = silent
@@ -88,7 +89,7 @@ class RemoteRobot():
         # print("sent reset")
 
 
-class KeyboardControlledRobot():
+class KeyboardControlledRobot:
     def __init__(self, host):
         # this is a bit nasty, but we only need to import this when the keyboard controller is needed
         import tkinter

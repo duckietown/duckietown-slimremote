@@ -1,7 +1,6 @@
 import random
 import time
 
-import numpy as np
 import cv2
 
 cap = cv2.VideoCapture(0)
@@ -20,7 +19,7 @@ tests = 10
 timings = 0
 
 i = 0
-while (True):
+while True:
     # Capture frame-by-frame
     start = time.time()
     ret, frame = cap.read()
@@ -35,9 +34,6 @@ while (True):
     if i == tests:
         break
 
-    time.sleep(random.random()*3)
-
-
+    time.sleep(random.random() * 3)
 
 cap.release()
-

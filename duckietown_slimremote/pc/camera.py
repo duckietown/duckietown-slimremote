@@ -1,9 +1,9 @@
 import time
 from threading import Event, Thread
 
+import matplotlib
 import numpy as np
 import zmq
-import matplotlib
 
 # matplotlib.use('TkAgg')  # needed for tkinter GUI
 matplotlib.use("Agg")
@@ -45,7 +45,7 @@ class ThreadedSubCamera(Thread):
                 timings, start = timer(timings, start)
 
 
-class SubCameraMaster():
+class SubCameraMaster:
     # controls and communicates with the threaded sub camera
     def __init__(self, host, silent=False):
         self.frame = Frame()
@@ -78,7 +78,7 @@ def cam_window_init():
     img = np.random.uniform(0, 255, (256, 512, 3))
     img_container = plt.imshow(img, interpolation='none', animated=True, label="blah")
     img_window = plt.gca()
-    return (img_container, img_window)
+    return img_container, img_window
 
 
 def cam_window_update(img, img_container, img_window):

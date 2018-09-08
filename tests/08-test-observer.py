@@ -1,10 +1,10 @@
-from duckietown_slimremote.networking import make_sub_socket, make_pub_socket, construct_action, recv_array, \
-    get_ip
 import time
 
 import zmq
 
 from duckietown_slimremote.helpers import random_id, get_py_version
+from duckietown_slimremote.networking import make_sub_socket, make_pub_socket, construct_action, recv_array, \
+    get_ip
 
 print(get_py_version())
 
@@ -40,7 +40,6 @@ timings = 0
 start = time.time()
 
 for i in range(tests):
-
 
     # print("sending hb again")
     action_pub.send_string(msg)  # this is harmless bc just a heartbeat

@@ -1,6 +1,5 @@
 import time
 
-import picamera
 import picamera.array
 
 TESTS = 10
@@ -17,4 +16,4 @@ with picamera.PiCamera() as camera:
             diff = time.time() - start
             timings += diff
             # print (output.array.shape)
-        print ("ran {} tests with an avera of {}s".format(TESTS,timings/TESTS))
+        print("ran {} tests with an avera of {}s".format(TESTS, timings / TESTS))

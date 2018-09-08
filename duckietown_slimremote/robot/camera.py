@@ -1,5 +1,4 @@
 from multiprocessing import Process
-from threading import Thread
 
 import cv2
 import numpy as np
@@ -10,7 +9,7 @@ from duckietown_slimremote.networking import make_pub_socket, send_gym
 from duckietown_slimremote.robot.constants import CAM_FAILURE_COUNTER
 
 
-class Camera():
+class Camera:
     def __init__(self, res=(320, 240), fps=90):
         self.cap = cv2.VideoCapture(0)
 
@@ -68,13 +67,11 @@ def make_async_camera(base):
             # get camera image
             # broadcast image
 
-            keep_running = True
-            while keep_running:
+            while True:
                 if not self.queue.empty():
                     cmd = self.queue.get()
                     if cmd == "kill":
-                        keep_running = False
-                        break  # redundant I guess
+                        break
                     else:
                         if self.publisher_socket is None:
                             self.publisher_socket = make_pub_socket(
@@ -94,8 +91,7 @@ def make_async_camera(base):
     return AsyncPubCamera, queue
 
 
-class CameraController():
-
+class CameraController:
     def __init__(self) -> None:
         # cam_class = make_async_camera(Thread)
         cam_class, cam_queue = make_async_camera(Process)

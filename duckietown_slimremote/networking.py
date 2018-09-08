@@ -1,25 +1,23 @@
 from __future__ import unicode_literals
-from builtins import dict, str
+
 import ast
+import sys
+from builtins import dict, str
 from queue import Queue
 from threading import Thread
-
 import zmq
-
-import sys
+import numpy as np
+import socket
 
 if sys.version_info > (3,):
     buffer = memoryview
-
-import numpy as np
-
-import socket
 
 hostname = socket.gethostname()
 
 context = zmq.Context()  # we only ever need one context. This is thread-safe, but not process-safe afaik
 
 RESET = "reset"
+
 
 def get_port(for_images=False):
     port = 8901  # for pc->robot comm
@@ -85,7 +83,7 @@ def make_pull_socket(with_poller=True):
         poller = zmq.Poller()
         poller.register(socket_pull, zmq.POLLIN)
 
-    return (socket_pull, poller)
+    return socket_pull, poller
 
 
 def has_pull_message(socket_pull, poller, timeout=5):
@@ -210,7 +208,7 @@ def recv_gym(socket, flags=0, copy=True, track=False):
 
     buf = buffer(msg)
     A = np.frombuffer(buf, dtype=md['dtype'])
-    return (A.reshape(md['shape']), rew, done, misc)
+    return A.reshape(md['shape']), rew, done, misc
 
 
 def construct_action(id, ip=None, action=None):

@@ -12,7 +12,6 @@ leftMotor = motorhat.getMotor(1)
 rightMotor = motorhat.getMotor(2)
 
 
-
 def run_test(direction, speed):
     leftMotor.setSpeed(speeds[speed])
     leftMotor.run(direction)
@@ -29,11 +28,11 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.BACKWARD, "min_speed")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("just setting backward and min_speed: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
 
 ########
@@ -45,11 +44,11 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.BACKWARD, "max_speed")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("just setting backward and max_speed: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
 
 ########
@@ -61,11 +60,11 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.FORWARD, "min_speed")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("just setting forward and min_speed: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
 
 ########
@@ -77,13 +76,12 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.FORWARD, "max_speed")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("just setting forward and max_speed: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
-
 
 ########
 
@@ -94,11 +92,11 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.RELEASE, "zero")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("just setting release: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
 
 ########
@@ -111,11 +109,11 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.BACKWARD, "max_speed")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("switching between speeds: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
 
 ########
@@ -128,13 +126,12 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.BACKWARD, "min_speed")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("reversing directions: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
-
 
 ########
 
@@ -146,17 +143,14 @@ for i in range(tests):
     run_test(Adafruit_MotorHAT.BACKWARD, "max_speed")
     timings += time.time() - start
 
-dt = timings/tests
+dt = timings / tests
 
 print("reversing directions and changing speeds: ~{}s / ~{}HZ".format(
-    round(dt,4),
-    round(1/dt,4)
+    round(dt, 4),
+    round(1 / dt, 4)
 ))
 
-
 run_test(Adafruit_MotorHAT.RELEASE, "zero")
-
-
 
 #### RESULTS
 

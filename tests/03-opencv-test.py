@@ -1,6 +1,5 @@
 import time
 
-import numpy as np
 import cv2
 
 cap = cv2.VideoCapture(0)
@@ -21,7 +20,7 @@ for res in [(160, 128), (320, 240)]:
         timings = 0
 
         i = 0
-        while (True):
+        while True:
             # Capture frame-by-frame
             start = time.time()
             ret, frame = cap.read()

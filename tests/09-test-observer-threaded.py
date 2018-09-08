@@ -1,10 +1,8 @@
-from duckietown_slimremote.networking import make_sub_socket, make_pub_socket, construct_action, recv_array, \
-    get_ip, ThreadedImageSubscriber, start_thread_w_queue
 import time
 
-import zmq
-
 from duckietown_slimremote.helpers import random_id, get_py_version
+from duckietown_slimremote.networking import make_pub_socket, construct_action, get_ip, ThreadedImageSubscriber, \
+    start_thread_w_queue
 
 print(get_py_version())
 

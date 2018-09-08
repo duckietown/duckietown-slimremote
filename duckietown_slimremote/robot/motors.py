@@ -1,15 +1,11 @@
 import queue
 from multiprocessing import Process
-from threading import Thread
-import time
+
 from Adafruit_MotorHAT import Adafruit_MotorHAT
 
 from duckietown_slimremote.helpers import get_right_queue
 from duckietown_slimremote.robot.constants import MOTOR_MAX_SPEED, DECELERATION_TIMEOUT, DECELERATION_BREAK_TIME, \
     DECELERATION_STEPS
-
-from queue import Queue
-
 from duckietown_slimremote.robot.led import RGB_LED
 
 
@@ -35,7 +31,7 @@ def _inverse_kinematics(v, omega):
     # very shitty temporary solution
     v_left = v
     v_right = omega
-    return (v_left, v_right)
+    return v_left, v_right
 
 
 def _clip_normalized_speed(speed):
@@ -78,7 +74,7 @@ def ease_out_action(last_action, delta):
     return new_action
 
 
-class Controller():
+class Controller:
     def __init__(self, with_rgb=True):
         self.with_rgb = with_rgb
 
@@ -186,7 +182,7 @@ def make_async_controller(base):
                     # check if it's time to break
                     delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
 
-                    if delta >= 0 and delta < DECELERATION_BREAK_TIME:
+                    if 0 <= delta < DECELERATION_BREAK_TIME:
                         # decelerate
                         if len(self.last_action) == 2:
                             new_action = ease_out_action(self.last_action, delta)
@@ -205,12 +201,12 @@ def make_async_controller(base):
     return AsyncController, queue
 
 
-class FailsafeController():
-    ''' Main class for controlling the robot.
+class FailsafeController:
+    """ Main class for controlling the robot.
     Includes automatic deceleration if no action
     is received for DECELERATION_TIMEOUT
 
-    '''
+    """
 
     def __init__(self):
         ctrl_class, ctrl_queue = make_async_controller(Process)
