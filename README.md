@@ -22,7 +22,7 @@ The following command will start the motor contoller and image server:
 
 To build the image locally (i.e. on an x86 laptop), run the following command from root directory of this project:
 
-    docker build --file docker/robot/Dockerfile --tag duckietown/duckietown-slimremote .
+    docker build --tag duckietown/duckietown-slimremote .
     
 TODO: more documentation on the remote side of this, i.e. how does somebody connect to this docker?
 
