@@ -1,4 +1,5 @@
 import numpy as np
+from PIL import ImageTk, Image
 
 from duckietown_slimremote.helpers import random_id
 from duckietown_slimremote.networking import make_push_socket, construct_action, RESET
@@ -125,7 +126,7 @@ class KeyboardControlledRobot:
 
     def updateImg(self):
         self.rootwindow.after(200, self.updateImg)
-        obs, rew, done = self.robot.observe()
+        obs, rew, done, misc = self.robot.observe()
         if obs is not None:
             img2 = ImageTk.PhotoImage(Image.fromarray(obs))
             self.panel.configure(image=img2)

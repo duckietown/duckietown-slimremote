@@ -1,4 +1,5 @@
 import queue
+import time
 from multiprocessing import Process
 
 from Adafruit_MotorHAT import Adafruit_MotorHAT

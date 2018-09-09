@@ -1,20 +1,44 @@
-FROM resin/raspberrypi3-alpine-python:3.4-slim
+FROM resin/raspberrypi3-python:3.4-slim
 
 RUN [ "cross-build-start" ]
 
-RUN pip3 install --index-url https://www.piwheels.org/simple \
+RUN apt update -y && \
+    apt install -y --no-install-recommends \
+        python-dev \
+        build-essential && \
+    apt install -y --no-install-recommends libpng12-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install cython numpy
+
+RUN pip install --index-url https://www.piwheels.org/simple \
     opencv-contrib-python \
+    Adafruit-MotorHAT \
     opencv-python \
     pyzmq 
+
+RUN apt update -y && \
+    apt install -y --no-install-recommends \
+        python-opencv \
+        libqtgui4 \
+        libjpeg62 \
+        libpng-dev \
+        libwebp-dev \
+        libqt4-test \
+        libtiff5-dev \
+        libjasper-dev \
+        libilmbase-dev \
+        libfreetype6-dev \
+        libgstreamer1.0-dev \
+        libatlas-base-dev && \
+    apt install -y --no-install-recommends libpng12-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR duckietown-slimremote
 
 COPY . .
 
-RUN apk --no-cache add gcc && \
-    pip3 install -e . && \
-    apk del gcc && \
-    rm -rf /var/lib/apt/lists/*
+RUN pip install -e .
 
 RUN [ "cross-build-end" ]
 

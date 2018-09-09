@@ -1,3 +1,8 @@
+import sys
 from duckietown_slimremote.pc.robot import KeyboardControlledRobot
 
-kbd = KeyboardControlledRobot("localhost")
+host = "localhost"
+if len(sys.argv) > 1:
+    host = sys.argv[1]
+
+kbd = KeyboardControlledRobot(host)
