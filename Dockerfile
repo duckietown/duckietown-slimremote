@@ -30,6 +30,7 @@ RUN apt update -y && \
         libilmbase-dev \
         libfreetype6-dev \
         libgstreamer1.0-dev \
+        libc6 \
         libatlas-base-dev && \
     apt install -y --no-install-recommends libpng12-dev && \
     rm -rf /var/lib/apt/lists/*
