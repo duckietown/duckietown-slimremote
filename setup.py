@@ -19,6 +19,7 @@ install_requires = [
 if IS_RPI:
     install_requires.append('Adafruit-MotorHAT')  # for controlling the motors
     # install_requires.append('cv2')  # for high speed image capturing # this has to be compiled by hand on the rpi
+    install_requires.append('picamera')
 
 setup(
     name='duckietown_slimremote',

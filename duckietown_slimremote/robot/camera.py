@@ -4,6 +4,8 @@ from threading import Thread
 import cv2
 import numpy as np
 import zmq
+from picamera import PiCamera
+from picamera.array import PiRGBArray
 
 from duckietown_slimremote.helpers import get_right_queue
 from duckietown_slimremote.networking import make_pub_socket, send_gym
@@ -46,6 +48,32 @@ class Camera():
         return np.asarray(frame[:, :, ::-1], order='C')
 
 
+class ShittyCamera(Camera):
+    def __init__(self, res=(320, 240), fps=90):
+        super(ShittyCamera, self).__init__()
+        self.camera = PiCamera()
+        del self.cap
+
+        # print ("max framerate: ",camera.MAX_FRAMERATE)
+        self.camera.resolution = res
+        # camera.rotation = rotation
+        self.camera.framerate = min(60, fps)
+        # camera.hflip = hflip
+        # camera.vflip = vflip
+        self.rawCapture = PiRGBArray(self.camera, size=res)
+        self.stream = self.camera.capture_continuous(self.rawCapture,
+                                                     format="rgb",
+                                                     use_video_port=True)
+        print("camera running with {}x{} px at {}Hz".format(res[0], res[1], fps))
+
+    def observe(self):
+        f = next(self.stream)
+        frame = f.array
+        self.rawCapture.truncate(0)
+
+        return frame
+
+
 def make_async_camera(base):
     """ allows to instantiate the camera as thread or as process
 
@@ -59,7 +87,7 @@ def make_async_camera(base):
             # Thread.__init__(self)
             self.queue = queue
             self.publisher_socket = None
-            self.cam = Camera(res=(160, 120))
+            self.cam = ShittyCamera(res=(160, 120))
             self.context = zmq.Context()
 
         def run(self):
