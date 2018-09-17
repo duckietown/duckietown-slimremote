@@ -16,7 +16,7 @@ If your Duckiebot is running HypriotOS/DuckieOS, you can run `duckietown/duckiet
 
 The following command will start the motor contoller and image server on the Duckiebot:
 
-    docker run -dit -p 5558:5558 --privileged duckietown/duckietown-slimremote
+    docker run -dit -p 5558:5558 -p 8902:8902 --privileged duckietown/duckietown-slimremote
 
 Once the motor controller and image server are started, you can control the Duckiebot via the keyboard on a PC or Mac:
 
