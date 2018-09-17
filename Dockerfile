@@ -1,4 +1,4 @@
-FROM resin/raspberrypi3-python:3.4-slim
+FROM resin/raspberrypi3-python:3.6-slim
 
 ENV QEMU_EXECVE 1
 ENV DISPLAY :0
@@ -44,5 +44,6 @@ COPY . .
 RUN pip install -e .
 
 RUN [ "cross-build-end" ]
+
 
 CMD ["duckietown-start-robot2"]

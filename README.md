@@ -12,19 +12,26 @@ This library is integrated in the following applications:
 
 ## Docker
 
-If your Duckiebot is running HypriotOS/DuckieOS, you can run duckietown-slimremote in a Docker container.
+If your Duckiebot is running HypriotOS/DuckieOS, you can run `duckietown/duckietown-slimremote` in a Docker container.
 
-The following command will start the motor contoller and image server:
+The following command will start the motor contoller and image server on the Duckiebot:
 
     docker run -dit -p 5558:5558 --privileged duckietown/duckietown-slimremote
+
+Once the motor controller and image server are started, you can control the Duckiebot via the keyboard on a PC or Mac:
+
+```
+docker run -it \
+	--entrypoint=qemu-arm-static \
+	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+	duckietown/duckietown-slimremote /bin/sh -c "python tests/12-test-keyboard-controller.py"
+```
 
 ### Building 
 
 To build the image locally (i.e. on an x86 laptop), run the following command from root directory of this project:
 
     docker build --tag duckietown/duckietown-slimremote .
-    
-TODO: more documentation on the remote side of this, i.e. how does somebody connect to this docker?
 
 ## Manual Installation
 
