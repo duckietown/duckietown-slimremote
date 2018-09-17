@@ -16,7 +16,7 @@ If your Duckiebot is running HypriotOS/DuckieOS, you can run duckietown-slimremo
 
 The following command will start the motor contoller and image server:
 
-    docker run -dit -p 5558:5558 --privileged duckietown/duckietown-slimremote
+    docker run -dit -p 5558:5558 -p 8902:8902 --privileged duckietown/duckietown-slimremote
 
 ### Building 
 
