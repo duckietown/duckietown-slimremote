@@ -14,7 +14,7 @@ if os.path.isfile(rpi_model_file):
 install_requires = [
     'numpy',
     'pillow',
-    'zmq'
+    'pyzmq',
 ]
 
 if IS_RPI:
