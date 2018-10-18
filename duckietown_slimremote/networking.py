@@ -68,7 +68,7 @@ def make_pub_socket(for_images=False, context_=None):
 
     port = get_port(for_images)
 
-    print("starting pub socket on", port)
+    print("starting pub socket on port %s" % port)
     socket_pub = context_.socket(zmq.PUB)
     socket_pub.bind("tcp://*:{}".format(
             port

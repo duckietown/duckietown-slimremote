@@ -35,7 +35,11 @@ class ThreadedSubCamera(Thread):
 
             img, rew, done, misc = recv_gym(self.sock)
 
-            np.copyto(self.frame.obs, img)
+            if self.frame.obs.shape == img.shape:
+                np.copyto(self.frame.obs, img)
+            else:
+                self.frame.obs = img.copy()
+
             self.frame.rew = rew
             self.frame.done = done
             self.frame.misc.update(misc)
