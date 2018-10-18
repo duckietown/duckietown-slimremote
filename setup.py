@@ -21,9 +21,28 @@ if IS_RPI:
     install_requires.append('Adafruit-MotorHAT')  # for controlling the motors
     # install_requires.append('cv2')  # for high speed image capturing
 
+
+def get_version(filename):
+    import ast
+    version = None
+    with open(filename) as f:
+        for line in f:
+            if line.startswith('__version__'):
+                version = ast.parse(line).body[0].value.s
+                break
+        else:
+            raise ValueError('No version found in %r.' % filename)
+    if version is None:
+        raise ValueError(filename)
+    return version
+
+
+version = get_version(filename='duckietown_slimremote/__init__.py')
+
+
 setup(
     name='duckietown_slimremote',
-    version='2018.8.4',
+    version=version,
     install_requires=install_requires,
     entry_points={
         'console_scripts': [
