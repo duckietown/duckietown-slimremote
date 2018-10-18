@@ -73,7 +73,8 @@ class SubCameraMaster:
         self.event_ready.wait()
 
     def empty_cache(self):
-        np.copyto(dst=self.frame.obs, src=np.zeros((120, 160, 3), dtype=np.uint8))
+        self.frame.obs.fill(0)
+        # np.copyto(dst=self.frame.obs, src=np.zeros((120, 160, 3), dtype=np.uint8))
 
 
 def cam_window_init():
