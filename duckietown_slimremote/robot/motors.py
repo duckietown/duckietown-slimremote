@@ -172,7 +172,7 @@ def make_async_controller(base):
                         self.robot.list_action([0, 0])
                         self.robot.rgb_off()
                     else:
-                        ik = self.robot.ik_action(action[:2])
+                        ik = self.robot.ik_action(v=action[0], omega=action[1])
                         if len(action) == 5:
                             self.robot.rgb_action(action[2:])
 
