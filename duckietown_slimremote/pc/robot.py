@@ -1,6 +1,9 @@
+import time
+
 import numpy as np
 from PIL import ImageTk, Image
 
+from duckietown_slimremote import logger
 from duckietown_slimremote.helpers import random_id
 from duckietown_slimremote.networking import make_push_socket, construct_action, RESET
 from duckietown_slimremote.pc.camera import SubCameraMaster
@@ -64,14 +67,19 @@ class RemoteRobot:
 
         obs, rew, done, misc = self.cam.get_new_observation()
 
-        if np.count_nonzero(obs) == 0:
+        def not_ready():
+            return np.count_nonzero(obs) == 0
+
+        while not_ready():
             # then the simulator probably wasn't ready
             # and we send the action again
+            logger.info('Simulator not ready - wait 1 second and try again')
             self.robot_sock.send_string(msg)
+            time.sleep(1)
             obs, rew, done, misc = self.cam.get_new_observation()
-            if np.count_nonzero(obs) == 0:
-                # if this happens twice then we can assume the server is offline
-                raise Exception("Can't connect to the gym-duckietown-server")
+            # if np.count_nonzero(obs) == 0:
+            #     # if this happens twice then we can assume the server is offline
+            #     raise Exception("Can't connect to the gym-duckietown-server")
 
         return obs, rew, done, misc
 
