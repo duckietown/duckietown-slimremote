@@ -70,16 +70,20 @@ class RemoteRobot:
         def not_ready():
             return np.count_nonzero(obs) == 0
 
+        ncounts = 5
+        wait = 1
         while not_ready():
             # then the simulator probably wasn't ready
             # and we send the action again
             logger.info('Simulator not ready - wait 1 second and try again')
             self.robot_sock.send_string(msg)
-            time.sleep(1)
+            time.sleep(wait)
             obs, rew, done, misc = self.cam.get_new_observation()
-            # if np.count_nonzero(obs) == 0:
-            #     # if this happens twice then we can assume the server is offline
-            #     raise Exception("Can't connect to the gym-duckietown-server")
+            ncounts -= 1
+            if ncounts == 0:
+                # if this happens twice then we can assume the server is offline
+                msg = "Giving up to connect to the gym duckietown server at host: %s" % self.host
+                raise Exception(msg)
 
         return obs, rew, done, misc
 
