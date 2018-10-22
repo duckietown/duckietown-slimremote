@@ -5,7 +5,7 @@ import socket
 import sys
 import traceback
 from threading import Thread
-
+import json
 import numpy as np
 import zmq
 from builtins import dict, str
@@ -71,7 +71,7 @@ def make_pub_socket(for_images=False, context_=None):
     print("starting pub socket on port %s" % port)
     socket_pub = context_.socket(zmq.PUB)
     socket_pub.bind("tcp://*:{}".format(
-            port
+        port
     ))
 
     return socket_pub
@@ -161,8 +161,8 @@ def receive_data(socket_sub):
 
 def say_hi(socket_pub):
     socket_pub.send_string("{} {}".format(
-            0,  # the topic for general messages
-            "welcome to the duckie party"
+        0,  # the topic for general messages
+        "welcome to the duckie party"
     ))
 
 
@@ -171,8 +171,8 @@ def send_array(socket, nparray, flags=0, copy=True, track=False):
     from http://pyzmq.readthedocs.io/en/latest/serialization.html
     """
     md = dict(
-            dtype=str(nparray.dtype),
-            shape=nparray.shape,
+        dtype=str(nparray.dtype),
+        shape=nparray.shape,
     )
     socket.send_json(md, flags | zmq.SNDMORE)
     return socket.send(nparray, flags, copy=copy, track=track)
@@ -206,10 +206,14 @@ def recv_gym(socket, flags=0, copy=True, track=False):
     done = (done == "True")
 
     misc = socket.recv_string(flags=flags)
+
+    if "array" in misc:  # this means somebody made a mistake and sent a numpy array instead of a list
+        misc = misc.replace("array([", "[").replace("])}", "]}")
+
     try:
         misc = ast.literal_eval(misc)
     except BaseException as e:
-        msg = 'Exception while calling literal_eval() on %r:\n\n%s' % (misc, traceback.format_exc(e))
+        msg = "Exception while calling literal_eval() on '{}'':\n\n{}".format(misc, traceback.format_exc(e))
         raise Exception(msg)
 
     buf = buffer(msg)
