@@ -10,7 +10,7 @@ from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
 class RemoteRobot:
-    def __init__(self, host, silent=False):
+    def __init__(self, host, shape, dtype, silent=False):
         self.host = host
         self.silent = silent
 
@@ -26,7 +26,7 @@ class RemoteRobot:
         # Initialize the PUSH socket
         self.robot_sock = make_push_socket(host)
 
-        self.cam = SubCameraMaster(host, silent=self.silent)
+        self.cam = SubCameraMaster(host, silent=self.silent, shape=shape, dtype=dtype)
 
         # We have to wait for the thread to launch
         self.cam.wait_until_ready()
@@ -108,7 +108,9 @@ class KeyboardControlledRobot:
         import tkinter
         from PIL import ImageTk, Image
 
-        self.robot = RemoteRobot(host)
+        shape = (120, 160, 3)
+        dtype = np.uint8
+        self.robot = RemoteRobot(host, shape=shape, dtype=dtype)
 
         self.rootwindow = tkinter.Tk()
 

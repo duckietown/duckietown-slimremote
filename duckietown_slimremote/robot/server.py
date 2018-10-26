@@ -69,6 +69,8 @@ def main():
 
             # create new publisher socket for this controller
             # which is where we send the observations later
+
+            # FIXME: bug - never tested code will fail
             sock_pub = make_pub_socket(controller_ip, for_images=True)
 
             # be polite

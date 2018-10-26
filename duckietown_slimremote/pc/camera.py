@@ -49,10 +49,10 @@ class ThreadedSubCamera(Thread):
                 timings, start = timer(timings, start)
 
 
-class SubCameraMaster:
+class SubCameraMaster(object):
     # controls and communicates with the threaded sub camera
-    def __init__(self, host, silent=False):
-        self.frame = Frame()
+    def __init__(self, host, shape, dtype, silent=False):
+        self.frame = Frame(shape, dtype)
         self.event_img = Event()
         self.event_ready = Event()
 
@@ -78,7 +78,7 @@ class SubCameraMaster:
 
 
 def cam_window_init():
-    ### THIS IS SHITTY AND SLOW, USE OPENCV INSTEAD
+    ### THIS IS SLOW, USE OPENCV INSTEAD
     plt.ion()
     img = np.random.uniform(0, 255, (256, 512, 3))
     img_container = plt.imshow(img, interpolation='none', animated=True, label="blah")
@@ -87,7 +87,7 @@ def cam_window_init():
 
 
 def cam_window_update(img, img_container, img_window):
-    # THIS IS SHITTY AND SLOW, USE OPENCV INSTEAD
+    # THIS IS SLOW, USE OPENCV INSTEAD
     img_container.set_data(img)
     img_window.plot([0])
     plt.pause(0.001)

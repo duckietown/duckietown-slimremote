@@ -81,9 +81,11 @@ def get_right_queue(base):
 
 
 class Frame(object):
-    def __init__(self):
+    def __init__(self, shape, dtype):
+        self.shape = shape
+        self.dtype = dtype
         # will be overwritten later with new size
-        self.obs = np.zeros((120, 160, 3), dtype=np.uint8)
+        self.obs = np.zeros(shape=self.shape, dtype=self.dtype)
         self.rew = 0
         self.done = False
         self.misc = {}
