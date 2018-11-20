@@ -37,9 +37,25 @@ To build the image locally (i.e. on an x86 laptop), run the following command fr
 
 **On the robot:**
 
-First you need to compile the [most recent version of OpenCV](https://raspberrypi.stackexchange.com/questions/69169/how-to-install-opencv-on-raspberry-pi-3-in-raspbian-jessie).
+<!--First you need to compile the [most recent version of OpenCV](https://raspberrypi.stackexchange.com/questions/69169/how-to-install-opencv-on-raspberry-pi-3-in-raspbian-jessie).-->
 
-After that, clone and install this repo:
+**IMPORTANT:** For good image streaming results, the Duckiebot needs to be on 5GHz wifi
+
+On the new RPi 3B+ boards the I2C (motor) control socket is not writable by users by default. Therefore you have to make it writable on boot. 
+
+Open the crontab of the superuser:
+
+    sudo crontab -e
+    
+If it asks you which editor you'd like, pick `nano`.
+
+Then add the following line at the bottom:
+
+    @reboot chmod 777 /dev/i2c-1
+    
+And press <kbd>CTRL</kbd>+<kbd>o</kbd> followed by <kbd>ENTER</kbd> to save the file and <kbd>CTRL</kbd>+<kbd>x</kbd> to close `nano`. 
+
+Clone and install this repo:
 
     git clone https://github.com/duckietown/duckietown-slimremote.git && \
     cd duckietown-slimremote && \
@@ -49,11 +65,13 @@ Once the repo is installed you can start the robot controller:
 
     duckietown-start-robot2
     
-To quit the robot controller, press <kbd>Ctrl</kbd>+<kbd>c</kbd>.
+To quit the robot controller, press <kbd>CTRL</kbd>+<kbd>c</kbd>.
     
 **On the PC:**
 
-To run duckietown-slimremote on a PC or Mac, use the same installation procedure as the robot, however the OpenCV version is not important and the standard package manager should suffice (e.g. on Mac OS you can use `brew install opencv3 --with-contrib --with-python3 --without-python` for Python 3 bindings).
+To run duckietown-slimremote on a PC or Mac, use the same installation procedure as the robot. 
+
+however the OpenCV version is not important and the standard package manager should suffice (e.g. on Mac OS you can use `brew install opencv3 --with-contrib --with-python3 --without-python` for Python 3 bindings).
 
 ## Running
 

@@ -143,6 +143,7 @@ class KeyboardControlledRobot:
             img2 = ImageTk.PhotoImage(Image.fromarray(obs))
             self.panel.configure(image=img2)
             self.panel.image = img2
+            # if not (self.last_obs == obs).all():
             if not (self.last_obs == obs).all():
                 print("reward: {}, done: {}".format(rew, done))
                 self.last_obs = obs
@@ -181,12 +182,12 @@ class KeyboardControlledRobot:
         return False
 
     def _key_left(self):
-        if 8255233 in self.history or 113 in self.history:
+        if 8124162 in self.history or 113 in self.history:
             return True
         return False
 
     def _key_right(self):
-        if 8124162 in self.history or 114 in self.history:
+        if 8189699 in self.history or 124 in self.history:
             return True
         return False
 
@@ -197,23 +198,25 @@ class KeyboardControlledRobot:
 
     def keysToAction(self):
         # mac / lin keycodes
+
+        # it is utterly possible that I plugged in the wires opposite way around. :/
         action = np.array([0, 0])
         if self._key_up() and self._key_right():  # UP/RIGHT
-            action = np.array([1, -1])
+            action = np.array([-.4, -.7])
         elif self._key_up() and self._key_left():  # UP/LEFT
-            action = np.array([1, +1])
+            action = np.array([-.7, -.4])
         elif self._key_down() and self._key_right():  # DOWN/RIGHT
-            action = np.array([-1, +1])
+            action = np.array([.4, .7])
         elif self._key_down() and self._key_left():  # DOWN/LEFT
-            action = np.array([-1, -1])
+            action = np.array([.7, .4])
         elif self._key_up():  # UP
-            action = np.array([.7, 0])
+            action = np.array([-.7, -.7])
         elif self._key_right():  # RIGHT
-            action = np.array([.6, -1])
+            action = np.array([.4, -.4])
         elif self._key_down():  # DOWN
-            action = np.array([-.4, 0])
+            action = np.array([.7, .7])
         elif self._key_left():  # LEFT
-            action = np.array([.6, +1])
+            action = np.array([-.4, .4])
 
         if self._key_reset():
             action = [RESET]

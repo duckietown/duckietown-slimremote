@@ -26,15 +26,6 @@ def normalize_speed(denorm):
     return shifted
 
 
-def _inverse_kinematics(v, omega):
-    # TODO
-
-    # very shitty temporary solution
-    v_left = v
-    v_right = omega
-    return v_left, v_right
-
-
 def _clip_normalized_speed(speed):
     _speed = float(speed)
     return max(min(_speed, 1), -1)
@@ -124,8 +115,10 @@ class Controller:
         """
 
         assert len(speeds) == 2
+        # print ("speed left/right: {}|{}".format(speeds[0],speeds[1]))
         self.right_action(speeds[0])
         self.left_action(speeds[1])
+        return speeds
 
     def rgb_action(self, rgb):
         assert len(rgb) == 3
@@ -139,11 +132,6 @@ class Controller:
 
     def stop(self):
         self.list_action([0, 0])
-
-    def ik_action(self, v, omega):
-        ik = _inverse_kinematics(v, omega)
-        self.list_action(ik)
-        return ik
 
 
 def make_async_controller(base):
@@ -172,12 +160,12 @@ def make_async_controller(base):
                         self.robot.list_action([0, 0])
                         self.robot.rgb_off()
                     else:
-                        ik = self.robot.ik_action(v=action[0], omega=action[1])
+                        act = self.robot.list_action(action[:2])
                         if len(action) == 5:
                             self.robot.rgb_action(action[2:])
 
                         self.last_action_time = time.time()
-                        self.last_action = ik
+                        self.last_action = act
 
                 else:
                     # check if it's time to break

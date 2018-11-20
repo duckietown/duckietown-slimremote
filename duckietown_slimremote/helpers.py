@@ -74,7 +74,7 @@ def timer(timings, start, prefix=""):
 
 
 def get_right_queue(base):
-    if base is multiprocessing.context.Process:
+    if base is multiprocessing.Process:
         return multiprocessing.Queue
     else:
         return ThreadQueue

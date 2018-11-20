@@ -15,10 +15,12 @@ install_requires = [
     'numpy',
     'pillow',
     'pyzmq',
+    'future',
 ]
 
 if IS_RPI:
     install_requires.append('Adafruit-MotorHAT')  # for controlling the motors
+    install_requires.append('picamera')
     # install_requires.append('cv2')  # for high speed image capturing
 
 
