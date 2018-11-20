@@ -55,6 +55,7 @@ setup(
     },
     options={
         'build_scripts': {
+            # 'executable': 'python3',
             'executable': 'python3',
         },
     }

@@ -43,6 +43,8 @@ To build the image locally (i.e. on an x86 laptop), run the following command fr
 
 On the new RPi 3B+ boards the I2C (motor) control socket is not writable by users by default. Therefore you have to make it writable on boot. 
 
+**IMPORTANT** currently this works under Python 2 as well, but the image is always black. I assume that's some ZMQ/NumPy binary representation conflict. Will investigate.
+
 Open the crontab of the superuser:
 
     sudo crontab -e
@@ -54,6 +56,10 @@ Then add the following line at the bottom:
     @reboot chmod 777 /dev/i2c-1
     
 And press <kbd>CTRL</kbd>+<kbd>o</kbd> followed by <kbd>ENTER</kbd> to save the file and <kbd>CTRL</kbd>+<kbd>x</kbd> to close `nano`. 
+
+Some of the packages have to be compiled so you need the dev headers. 
+
+    sudo apt-get install python3-dev python3-pip libzmq-dev python3-opencv python3-zmq
 
 Clone and install this repo:
 
