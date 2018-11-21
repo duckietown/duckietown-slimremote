@@ -71,6 +71,7 @@ class SubCameraMaster:
 
     def wait_until_ready(self):
         self.event_ready.wait()
+        print ("cam ready")
 
     def empty_cache(self):
         self.frame.obs.fill(0)

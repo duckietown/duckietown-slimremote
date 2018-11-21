@@ -1,3 +1,4 @@
+import json
 from multiprocessing import Process
 from threading import Thread
 
@@ -8,8 +9,8 @@ import zmq
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 
-from duckietown_slimremote.helpers import get_right_queue
-from duckietown_slimremote.networking import make_pub_socket, send_gym
+from duckietown_slimremote.helpers import get_right_queue, string_convert
+from duckietown_slimremote.networking import make_pub_socket, send_gym, get_port
 from duckietown_slimremote.robot.constants import CAM_FAILURE_COUNTER
 
 
@@ -113,8 +114,8 @@ def make_async_camera2(base):
             super(AsyncPubCamera2, self).__init__()
             # Thread.__init__(self)
             self.queue = queue
-            self.publisher_socket = None
-            self.context = zmq.Context()
+            # self.publisher_socket = None
+            # self.context = zmq.Context()
             self.cam = PiCamera()
 
             self.cam.resolution = res
@@ -136,24 +137,45 @@ def make_async_camera2(base):
             # get camera image
             # broadcast image
 
+            publisher_socket = None
+            md = None
+
+            # if misc is None:
+            misc = {"challenge": None}
+            misc = string_convert(json.dumps(misc))
+
+            topic = string_convert(u"0")
+
+            rew = string_convert(str(0))
+            done = string_convert(str(False))
+
             for idx, f in enumerate(stream):
                 frame = f.array
+                if md is None:
+                    md = {
+                        "dtype": str(frame.dtype),
+                        "shape": frame.shape,
+                    }
+                    md = string_convert(json.dumps(md))
                 if not self.queue.empty():
                     cmd = self.queue.get()
                     if cmd == "kill":
                         break
                     else:
-                        if self.publisher_socket is None:
-                            self.publisher_socket = make_pub_socket(
-                                for_images=True,
-                                context_=self.context
-                            )
+                        if publisher_socket is None:
+                            port = get_port(True)
+
+                            print("starting pub socket on port %s" % port)
+                            context_ = zmq.Context()
+                            publisher_socket = context_.socket(zmq.PUB)
+                            publisher_socket.bind("tcp://*:{}".format(port))
 
                 # the pub / send_array method only works once the first subscriber is connected
-                if self.publisher_socket is not None:
+                if publisher_socket is not None:
                     # on the real robot we are sending 0 reward, in simulation the reward is a float
                     # we also send done=False because the real robot doesn't know when to stop ^^
-                    send_gym(self.publisher_socket, frame, 0, False)
+                    # send_gym(publisher_socket, frame, 0, False)
+                    publisher_socket.send_multipart([topic, md, frame, rew, done, misc])
                 raw.truncate(0)
 
     queue = get_right_queue(base)
@@ -164,7 +186,7 @@ def make_async_camera2(base):
 class CameraController:
     def __init__(self):
         # cam_class = make_async_camera(Thread)
-        cam_class, cam_queue = make_async_camera2(Thread) # picamera needs Thread, cv2 can use Process
+        cam_class, cam_queue = make_async_camera2(Thread)  # picamera needs Thread, cv2 can use Process
         self.cam_queue = cam_queue()
 
         self.cam = cam_class(self.cam_queue)

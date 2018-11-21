@@ -90,3 +90,9 @@ class Frame(object):
 
     def to_gym(self):
         return self.obs, self.rew, self.done, self.misc
+
+
+def string_convert(input):
+    if int(sys.version[0]) == 2:
+        return input.encode("ascii", 'ignore')
+    return input.encode()

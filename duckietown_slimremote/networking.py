@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 import ast
+import binascii
+import os
 import socket
 import sys
 import traceback
@@ -10,6 +12,8 @@ import numpy as np
 import zmq
 from builtins import dict, str
 from queue import Queue
+
+from duckietown_slimremote.helpers import string_convert
 
 if sys.version_info > (3,):
     buffer = memoryview
@@ -33,7 +37,10 @@ def get_host():
 
 
 def get_ip():
-    return socket.gethostbyname(hostname)
+    try:
+        return socket.gethostbyname(hostname)
+    except:
+        return binascii.hexlify(os.urandom(16))
 
 
 def make_sub_socket(with_failsafe=False, for_images=False, context_=None, target=None):
@@ -57,7 +64,8 @@ def make_sub_socket(with_failsafe=False, for_images=False, context_=None, target
             socket_sub.setsockopt_string(zmq.SUBSCRIBE, "99")
 
     else:  # subscribe to messags without topic
-        socket_sub.setsockopt_string(zmq.SUBSCRIBE, "")
+        print("listening to topic '0'")
+        socket_sub.setsockopt_string(zmq.SUBSCRIBE, "0")
 
     return socket_sub
 
@@ -166,55 +174,56 @@ def say_hi(socket_pub):
     ))
 
 
-def send_array(socket, nparray, flags=0, copy=True, track=False):
-    """send a numpy array with metadata
-    from http://pyzmq.readthedocs.io/en/latest/serialization.html
-    """
-    md = dict(
-        dtype=str(nparray.dtype),
-        shape=nparray.shape,
-    )
-    socket.send_json(md, flags | zmq.SNDMORE)
-    return socket.send(nparray, flags, copy=copy, track=track)
+# def send_array(socket, nparray, flags=0, copy=True, track=False):
+#     """send a numpy array with metadata
+#     from http://pyzmq.readthedocs.io/en/latest/serialization.html
+#     """
+#     md = {
+#         "dtype":str(nparray.dtype),
+#         "shape":nparray.shape,
+#     }
+#     socket.send_string(json.dumps(md), flags | zmq.SNDMORE)
+#     return socket.send(nparray, flags, copy=copy, track=track)
+#
+#
+# def recv_array(socket, flags=0, copy=True, track=False):
+#     """recv a numpy array"""
+#     md = socket.recv_string(flags=flags)
+#     print (md)
+#     md = json.loads(md)
+#     print (md)
+#     msg = socket.recv(flags=flags, copy=copy, track=track)
+#     buf = buffer(msg)
+#     A = np.frombuffer(buf, dtype=md['dtype'])
+#     return A.reshape(md['shape'])
 
 
-def recv_array(socket, flags=0, copy=True, track=False):
-    """recv a numpy array"""
-    md = socket.recv_json(flags=flags)
-    msg = socket.recv(flags=flags, copy=copy, track=track)
-    buf = buffer(msg)
-    A = np.frombuffer(buf, dtype=md['dtype'])
-    return A.reshape(md['shape'])
-
-
-def send_gym(socket, img, reward, done, misc=None, flags=0, copy=True, track=False):
+def send_gym(socket, img, reward, done, misc=None, flags=0, copy=False, track=False):
     if misc is None:
         misc = {"challenge": None}
 
-    send_array(socket, img, flags | zmq.SNDMORE, copy, track)
-    socket.send_string(str(reward), flags | zmq.SNDMORE)
-    socket.send_string(str(done), flags | zmq.SNDMORE)
-    return socket.send_string(str(misc), flags)
+    md = {
+        "dtype": str(img.dtype),
+        "shape": img.shape,
+    }
+
+    return socket.send_multipart([
+        string_convert("0"),  # topic
+        string_convert(json.dumps(md)),  # img metadata
+        img,  # img bytes
+        string_convert(str(reward)),  # reward
+        string_convert(str(done)),  # done bool
+        string_convert(json.dumps(misc))  # misc dict
+    ], flags=flags, copy=copy, track=track)
 
 
 def recv_gym(socket, flags=0, copy=True, track=False):
-    md = socket.recv_json(flags=flags)
-    msg = socket.recv(flags=flags, copy=copy, track=track)
-    rew = float(socket.recv_string(flags=flags))
+    [topic, md, msg, rew, done, misc] = socket.recv_multipart(flags, copy, track)
+    md = json.loads(md)
+    # if "array" in misc:  # this means somebody made a mistake and sent a numpy array instead of a list
+    #     misc = misc.replace("array([", "[").replace("])}", "]}")
 
-    done = socket.recv_string(flags=flags)
-    done = (done == "True")
-
-    misc = socket.recv_string(flags=flags)
-
-    if "array" in misc:  # this means somebody made a mistake and sent a numpy array instead of a list
-        misc = misc.replace("array([", "[").replace("])}", "]}")
-
-    try:
-        misc = ast.literal_eval(misc)
-    except BaseException as e:
-        msg = "Exception while calling literal_eval() on '{}'':\n\n{}".format(misc, traceback.format_exc(e))
-        raise Exception(msg)
+    misc = json.loads(misc)
 
     buf = buffer(msg)
     A = np.frombuffer(buf, dtype=md['dtype'])

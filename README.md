@@ -59,13 +59,13 @@ And press <kbd>CTRL</kbd>+<kbd>o</kbd> followed by <kbd>ENTER</kbd> to save the 
 
 Some of the packages have to be compiled so you need the dev headers. 
 
-    sudo apt-get install python3-dev python3-pip libzmq-dev python3-opencv python3-zmq
+    sudo apt-get install python-dev python-pip libzmq-dev python-opencv python-zmq
 
 Clone and install this repo:
 
     git clone https://github.com/duckietown/duckietown-slimremote.git && \
     cd duckietown-slimremote && \
-    sudo pip3 install -e . # Install to root user in developer mode
+    sudo pip install -e . # Install to root user in developer mode
     
 Once the repo is installed you can start the robot controller:
 
