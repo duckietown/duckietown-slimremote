@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import json
 import socket
 import sys
+import traceback
 from threading import Thread
 
 import numpy as np
@@ -43,7 +44,7 @@ def make_sub_socket(with_failsafe=False, for_images=False, context_=None, target
 
     port = get_port(for_images)
 
-    print("starting sub socket on", port)
+    print("starting sub socket on %s" % port)
     socket_sub = context_.socket(zmq.SUB)
     socket_sub.connect("tcp://{}:{}".format(target, port))
 
@@ -135,25 +136,31 @@ def receive_data(socket_sub):
         return False, data
 
     if topic == 0:
-        msg = msg.split(",")
-        if len(msg) != 2 and len(msg) != 5:
-            msg = msg[0].split(";")
+        msg0 = msg
+        try:
+
+            msg = msg.split(",")
             if len(msg) != 2 and len(msg) != 5:
-                data = "The action command is malformed: '{}'." \
-                       "The action must be either two or five floating point" \
-                       "values separated by a comma like so: " \
-                       "0.5111,-0.7 or so 0.5111,-0.7,0,0.5,1".format(msg)
-                return False, data
+                msg = msg[0].split(";")
+                if len(msg) != 2 and len(msg) != 5:
+                    data = "The action command is malformed: '{}'." \
+                           "The action must be either two or five floating point" \
+                           "values separated by a comma like so: " \
+                           "0.5111,-0.7 or so 0.5111,-0.7,0,0.5,1".format(msg)
+                    return False, data
 
-        msg = [float(m) for m in msg]
+            msg = [float(m) for m in msg]
 
-        ### check for LED command sanity
-        if len(msg) == 5:
-            if min(msg[2:]) < 0 or max(msg[2:]) > 1:
-                data = "The LED command has to be in range [0;1] " \
-                       "on each RGB color channel. However I got the " \
-                       "colors: {}".format(msg)
-                return False, data
+            ### check for LED command sanity
+            if len(msg) == 5:
+                if min(msg[2:]) < 0 or max(msg[2:]) > 1:
+                    data = "The LED command has to be in range [0;1] " \
+                           "on each RGB color channel. However I got the " \
+                           "colors: {}".format(msg)
+                    return False, data
+        except BaseException:
+            e = 'Could not parse this message:\n\n%r\n\n%s' % (msg0, traceback.format_exc(msg))
+            raise Exception(e)
 
     return True, {"topic": topic, "id": id, "ip": ip, "msg": msg}
 
