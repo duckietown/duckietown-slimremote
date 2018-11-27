@@ -143,7 +143,7 @@ class KeyboardControlledRobot:
     def updateImg(self):
         self.rootwindow.after(int(ceil(1000/self.fps)), self.updateImg)
         obs, rew, done, misc = self.robot.observe()
-        if obs is not None:
+        if obs is not None and np.count_nonzero(obs) > 0:
             img2 = ImageTk.PhotoImage(Image.fromarray(obs))
             self.panel.configure(image=img2)
             self.panel.image = img2
