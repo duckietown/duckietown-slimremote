@@ -59,7 +59,7 @@ And press <kbd>CTRL</kbd>+<kbd>o</kbd> followed by <kbd>ENTER</kbd> to save the 
 
 Some of the packages have to be compiled so you need the dev headers. 
 
-    sudo apt-get install python-dev python-pip libzmq-dev python-opencv python-zmq
+    sudo apt-get install python-dev python-pip libzmq-dev python-opencv python-zmq python-numpy
 
 Clone and install this repo:
 

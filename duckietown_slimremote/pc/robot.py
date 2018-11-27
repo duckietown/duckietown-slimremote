@@ -1,4 +1,5 @@
 import time
+from math import ceil
 
 import numpy as np
 from PIL import ImageTk, Image
@@ -103,7 +104,8 @@ class RemoteRobot:
 
 
 class KeyboardControlledRobot:
-    def __init__(self, host):
+    def __init__(self, host, fps=15):
+
         # this is a bit nasty, but we only need to import this when the keyboard controller is needed
         import tkinter
         from PIL import ImageTk, Image
@@ -133,18 +135,21 @@ class KeyboardControlledRobot:
         self.robot.step([0, 0], with_observation=False)  # init socket if it isn't
 
         frame.focus_set()
-        self.rootwindow.after(200, self.updateImg)
+        self.fps = fps
+        self.last_cmd_time = time.time()
+        self.rootwindow.after(int(ceil(1000/fps)), self.updateImg)
         self.rootwindow.mainloop()
 
     def updateImg(self):
-        self.rootwindow.after(200, self.updateImg)
+        self.rootwindow.after(int(ceil(1000/self.fps)), self.updateImg)
         obs, rew, done, misc = self.robot.observe()
         if obs is not None:
             img2 = ImageTk.PhotoImage(Image.fromarray(obs))
             self.panel.configure(image=img2)
             self.panel.image = img2
             # if not (self.last_obs == obs).all():
-            if not (self.last_obs == obs).all():
+            same_img = (self.last_obs == obs)
+            if (type(same_img) == type(True) and not same_img) or not same_img.all():
                 print("reward: {}, done: {}".format(rew, done))
                 self.last_obs = obs
 
@@ -154,10 +159,7 @@ class KeyboardControlledRobot:
         if e.keycode in self.history:
             self.history.pop(self.history.index(e.keycode))
 
-        # FIXME: commenting this out might break the control of the real robot,
-        # but also the real robot should break automatically
-
-        # self.moveRobot()
+        self.moveRobot()
 
     def moveRobot(self):
         action = self.keysToAction()
@@ -169,7 +171,11 @@ class KeyboardControlledRobot:
     def keydown(self, e):
         if not e.keycode in self.history:
             self.history.append(e.keycode)
-        self.moveRobot()
+
+        # limit the transmission while key held down
+        if time.time() - self.last_cmd_time > (1/self.fps):
+            self.last_cmd_time = time.time()
+            self.moveRobot()
 
     def _key_up(self):
         if 8320768 in self.history or 111 in self.history:

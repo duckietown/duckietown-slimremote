@@ -189,7 +189,7 @@ class CameraController:
         cam_class, cam_queue = make_async_camera2(Thread)  # picamera needs Thread, cv2 can use Process
         self.cam_queue = cam_queue()
 
-        self.cam = cam_class(self.cam_queue)
+        self.cam = cam_class(self.cam_queue, fps=15)
         self.cam.daemon = True  # so that you can kill the thread
         self.cam.start()
 
