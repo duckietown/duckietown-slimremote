@@ -11,7 +11,7 @@ from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
 class RemoteRobot:
-    def __init__(self, host, silent=False):
+    def __init__(self, host, shape, dtype, silent=False):
         self.host = host
         self.silent = silent
 
@@ -27,7 +27,7 @@ class RemoteRobot:
         # Initialize the PUSH socket
         self.robot_sock = make_push_socket(host)
 
-        self.cam = SubCameraMaster(host, silent=self.silent)
+        self.cam = SubCameraMaster(host, silent=self.silent, shape=shape, dtype=dtype)
 
         # We have to wait for the thread to launch
         self.cam.wait_until_ready()
@@ -104,13 +104,13 @@ class RemoteRobot:
 
 
 class KeyboardControlledRobot:
-    def __init__(self, host, fps=15):
+    def __init__(self, host, fps=15, shape=(640,480, 3), dtype=np.uint8):
 
         # this is a bit nasty, but we only need to import this when the keyboard controller is needed
         import tkinter
         from PIL import ImageTk, Image
 
-        self.robot = RemoteRobot(host)
+        self.robot = RemoteRobot(host, shape, dtype)
 
         self.rootwindow = tkinter.Tk()
 
@@ -125,7 +125,7 @@ class KeyboardControlledRobot:
 
         # Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
 
-        im = Image.fromarray(np.zeros((640, 480, 3), dtype=np.uint8))
+        im = Image.fromarray(np.zeros(shape, dtype=dtype))
         self.img = ImageTk.PhotoImage(im)
         self.panel = tkinter.Label(self.rootwindow, image=self.img)
 

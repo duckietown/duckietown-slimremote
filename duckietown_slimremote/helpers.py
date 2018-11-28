@@ -81,9 +81,11 @@ def get_right_queue(base):
 
 
 class Frame(object):
-    def __init__(self):
+    def __init__(self, shape, dtype):
+        self.shape = shape
+        self.dtype = dtype
         # will be overwritten later with new size
-        self.obs = np.zeros((480, 640, 3), dtype=np.uint8)
+        self.obs = np.zeros(shape=self.shape, dtype=self.dtype)
         self.rew = 0
         self.done = False
         self.misc = {}
@@ -98,7 +100,7 @@ def string_convert(input):
     return input.encode()
 
 
-def scale_img(img):
+def scale_img(img, res=(640,480)):
     import cv2
-    img = cv2.resize(img, (640, 480), interpolation=cv2.INTER_LINEAR)
+    img = cv2.resize(img, res, interpolation=cv2.INTER_LINEAR)
     return img

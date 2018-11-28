@@ -13,12 +13,14 @@ from duckietown_slimremote.networking import make_sub_socket, recv_gym
 
 
 class ThreadedSubCamera(Thread):
-    def __init__(self, frame, event_img, event_ready, host, silent=False):
+    def __init__(self, frame, event_img, event_ready, host, res=(640,480), silent=False):
         super(ThreadedSubCamera, self).__init__()
         self.silent = silent
         self.frame = frame
         self.event_img = event_img
         self.event_ready = event_ready
+
+        self.res = res
 
         context = zmq.Context()
         self.sock = make_sub_socket(for_images=True, context_=context, target=host)
@@ -38,7 +40,7 @@ class ThreadedSubCamera(Thread):
             # if self.frame.obs.shape == img.shape:
             #     np.copyto(scale_img(self.frame.obs), img)
             # else:
-            self.frame.obs = scale_img(img.copy())
+            self.frame.obs = scale_img(img.copy(), res=self.res)
 
             self.frame.rew = rew
             self.frame.done = done
@@ -51,12 +53,13 @@ class ThreadedSubCamera(Thread):
 
 class SubCameraMaster:
     # controls and communicates with the threaded sub camera
-    def __init__(self, host, silent=False):
-        self.frame = Frame()
+    def __init__(self, host, shape, dtype, silent=False):
+        self.frame = Frame(shape, dtype)
+
         self.event_img = Event()
         self.event_ready = Event()
 
-        self.cam_thread = ThreadedSubCamera(self.frame, self.event_img, self.event_ready, host, silent=silent)
+        self.cam_thread = ThreadedSubCamera(self.frame, self.event_img, self.event_ready, host, res=(shape[0],shape[1]), silent=silent)
         self.cam_thread.daemon = True
         self.cam_thread.start()
 
