@@ -2,7 +2,7 @@ import json
 from multiprocessing import Process
 from threading import Thread
 
-import cv2
+# import cv2
 import numpy as np
 import zmq
 
@@ -16,6 +16,7 @@ from duckietown_slimremote.robot.constants import CAM_FAILURE_COUNTER
 
 class Camera:
     def __init__(self, res=(160, 120), fps=30):
+        import cv2
         self.cap = cv2.VideoCapture(-1)
 
         # for i in range(50):

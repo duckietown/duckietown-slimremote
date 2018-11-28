@@ -4,7 +4,6 @@ import sys
 import time
 from queue import Queue as ThreadQueue
 
-import cv2
 import numpy as np
 
 
@@ -100,5 +99,6 @@ def string_convert(input):
 
 
 def scale_img(img):
+    import cv2
     img = cv2.resize(img, (640, 480), interpolation=cv2.INTER_LINEAR)
     return img
