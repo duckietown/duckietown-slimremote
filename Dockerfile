@@ -19,7 +19,8 @@ RUN pip install --index-url https://www.piwheels.org/simple \
     opencv-contrib-python \
     Adafruit-MotorHAT \
     opencv-python \
-    pyzmq 
+    pyzmq \
+    picamera
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \

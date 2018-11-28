@@ -8,7 +8,7 @@ import zmq
 # matplotlib.use('TkAgg')  # needed for tkinter GUI
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from duckietown_slimremote.helpers import timer, Frame
+from duckietown_slimremote.helpers import timer, Frame, scale_img
 from duckietown_slimremote.networking import make_sub_socket, recv_gym
 
 
@@ -35,10 +35,10 @@ class ThreadedSubCamera(Thread):
 
             img, rew, done, misc = recv_gym(self.sock)
 
-            if self.frame.obs.shape == img.shape:
-                np.copyto(self.frame.obs, img)
-            else:
-                self.frame.obs = img.copy()
+            # if self.frame.obs.shape == img.shape:
+            #     np.copyto(scale_img(self.frame.obs), img)
+            # else:
+            self.frame.obs = scale_img(img.copy())
 
             self.frame.rew = rew
             self.frame.done = done

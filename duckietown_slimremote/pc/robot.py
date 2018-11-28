@@ -125,7 +125,7 @@ class KeyboardControlledRobot:
 
         # Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
 
-        im = Image.fromarray(np.zeros((160, 120, 3), dtype=np.uint8))
+        im = Image.fromarray(np.zeros((640, 480, 3), dtype=np.uint8))
         self.img = ImageTk.PhotoImage(im)
         self.panel = tkinter.Label(self.rootwindow, image=self.img)
 
@@ -137,11 +137,11 @@ class KeyboardControlledRobot:
         frame.focus_set()
         self.fps = fps
         self.last_cmd_time = time.time()
-        self.rootwindow.after(int(ceil(1000/fps)), self.updateImg)
+        self.rootwindow.after(int(ceil(1000 / fps)), self.updateImg)
         self.rootwindow.mainloop()
 
     def updateImg(self):
-        self.rootwindow.after(int(ceil(1000/self.fps)), self.updateImg)
+        self.rootwindow.after(int(ceil(1000 / self.fps)), self.updateImg)
         obs, rew, done, misc = self.robot.observe()
         if obs is not None and np.count_nonzero(obs) > 0:
             img2 = ImageTk.PhotoImage(Image.fromarray(obs))
@@ -173,7 +173,7 @@ class KeyboardControlledRobot:
             self.history.append(e.keycode)
 
         # limit the transmission while key held down
-        if time.time() - self.last_cmd_time > (1/self.fps):
+        if time.time() - self.last_cmd_time > (1 / self.fps):
             self.last_cmd_time = time.time()
             self.moveRobot()
 

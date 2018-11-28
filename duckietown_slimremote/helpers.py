@@ -4,6 +4,7 @@ import sys
 import time
 from queue import Queue as ThreadQueue
 
+import cv2
 import numpy as np
 
 
@@ -83,7 +84,7 @@ def get_right_queue(base):
 class Frame(object):
     def __init__(self):
         # will be overwritten later with new size
-        self.obs = np.zeros((120, 160, 3), dtype=np.uint8)
+        self.obs = np.zeros((480, 640, 3), dtype=np.uint8)
         self.rew = 0
         self.done = False
         self.misc = {}
@@ -96,3 +97,8 @@ def string_convert(input):
     if int(sys.version[0]) == 2:
         return input.encode("ascii", 'ignore')
     return input.encode()
+
+
+def scale_img(img):
+    img = cv2.resize(img, (640, 480), interpolation=cv2.INTER_LINEAR)
+    return img
