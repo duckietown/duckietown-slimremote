@@ -297,3 +297,12 @@ def get_last_queue_element(queue):
     while not queue.empty():
         out = queue.get()
     return out
+
+def host_is_reachable(addr):
+    import os
+    response = os.system("ping -c 1 -w2 " + addr + " > /dev/null 2>&1")
+
+    if response == 0:
+        return True # if the host is up
+    else:
+        return False # host not pingable

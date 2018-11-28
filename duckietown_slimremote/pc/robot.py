@@ -6,12 +6,16 @@ from PIL import ImageTk, Image
 
 from duckietown_slimremote import logger
 from duckietown_slimremote.helpers import random_id
-from duckietown_slimremote.networking import make_push_socket, construct_action, RESET
+from duckietown_slimremote.networking import make_push_socket, construct_action, RESET, host_is_reachable
 from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
 class RemoteRobot:
     def __init__(self, host, shape, dtype, silent=False):
+        logger.info('Slimremote trying to connect to {}'.format(host))
+        reachable = host_is_reachable(host)
+        logger.info("'ping' reports host is " + ("REACHABLE" if reachable else "NOT reachable"))
+
         self.host = host
         self.silent = silent
 
@@ -104,7 +108,7 @@ class RemoteRobot:
 
 
 class KeyboardControlledRobot:
-    def __init__(self, host, fps=15, shape=(640,480, 3), dtype=np.uint8):
+    def __init__(self, host, fps=15, shape=(640, 480, 3), dtype=np.uint8):
 
         # this is a bit nasty, but we only need to import this when the keyboard controller is needed
         import tkinter
