@@ -9,12 +9,13 @@ from duckietown_slimremote.helpers import random_id
 from duckietown_slimremote.networking import make_push_socket, construct_action, RESET, host_is_reachable
 from duckietown_slimremote.pc.camera import SubCameraMaster
 
+
 # cd /workspace/src/duckietown-slimremote/ && git config --global user.email "you@example.com" && \
-# git config --global user.name "Your Name" && git pull origin testing && git reset --hard origin/testing
+# git config --global user.name "Your Name" && git pull origin testing; git reset --hard origin/testing
 
 
 class RemoteRobot:
-    def __init__(self, host, shape, dtype, silent=False):
+    def __init__(self, host, shape=(640, 480, 3), dtype=np.uint8, silent=False):
         logger.info('Slimremote trying to connect to "{}"'.format(host))
         reachable = host_is_reachable(host)
         logger.info("'ping' reports host is " + ("REACHABLE" if reachable else "NOT reachable"))
