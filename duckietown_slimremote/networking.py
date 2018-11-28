@@ -28,7 +28,7 @@ RESET = "reset"
 def get_port(for_images=False):
     port = 8901  # for pc->robot comm
     if for_images:
-        port = 8902  # for robot->spc comm
+        port = 8902  # for robot->pc comm
     return port
 
 

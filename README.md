@@ -24,7 +24,7 @@ Once the motor controller and image server are started, you can control the Duck
 docker run -it \
 	--entrypoint=qemu-arm-static \
 	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-	duckietown/duckietown-slimremote /bin/sh -c "python tests/12-test-keyboard-controller.py"
+	duckietown/duckietown-slimremote /bin/sh -c "python tests/12-test-keyboard-controller.py ![hostname]"
 ```
 
 ### Building 
@@ -83,7 +83,7 @@ however the OpenCV version is not important and the standard package manager sho
 
 To launch duckietown-slimremote, run the following command from the project root directory:
 
-    python3 tests/12-test-keyboard-controller.py
+    python3 tests/12-test-keyboard-controller.py ![hostname]
     
 This will open a GUI controller that displays the robot's camera, and in which you drive the Duckiebot via the arrow keys (<kbd>↑</kbd>,<kbd>↓</kbd>,<kbd>←</kbd>,<kbd>→</kbd>), which are mapped to motor oututs.
 
