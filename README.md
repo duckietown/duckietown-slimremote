@@ -20,12 +20,14 @@ The following command will start the motor contoller and image server on the Duc
 
 Once the motor controller and image server are started, you can control the Duckiebot via the keyboard on a PC or Mac:
 
-```
-docker run -it \
+
+~~docker run -it \
 	--entrypoint=qemu-arm-static \
 	--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-	fgolemo/duckietown-slimremote:testing /bin/sh -c "python tests/12-test-keyboard-controller.py ![hostname]"
-```
+	fgolemo/duckietown-slimremote:testing /bin/sh -c "python tests/12-test-keyboard-controller.py ![hostname]"~~
+	
+No, don't do this. There is no reason to do this. If you want keyboard control, install the duckietown-slimremote locally as described below in the section "Manual Installation -> On the PC" and then run `python3 tests/12-test-keyboard-controller.py ![hostname]`
+
 
 ### Building 
 
