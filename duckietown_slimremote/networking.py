@@ -227,7 +227,7 @@ def recv_gym(socket, flags=0, copy=True, track=False):
 
     buf = buffer(msg)
     A = np.frombuffer(buf, dtype=md['dtype'])
-    return A.reshape(md['shape']), rew, done, misc
+    return A.reshape(md['shape']), float(rew), bool(done), misc
 
 
 def construct_action(id, ip=None, action=None):
