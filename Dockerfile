@@ -23,6 +23,10 @@ RUN pip3 install future
 RUN pip install --index-url https://www.piwheels.org/simple \
     picamera pillow
 
+RUN apt-get update -y && apt-get install -y python3-tk wget
+
+RUN wget "https://github.com/jabelone/OpenCV-for-Pi/raw/master/latest-OpenCV.deb" && dpkg -i latest-OpenCV.deb
+
 #RUN pip install --index-url https://www.piwheels.org/simple \
 #    opencv-python
 
