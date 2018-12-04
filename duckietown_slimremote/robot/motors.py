@@ -199,7 +199,7 @@ class FailsafeController:
     """
 
     def __init__(self):
-        self.max_speed = os.getenv("DUCKIETOWN_MAXSPEED", 0.7)
+        self.max_speed = float(os.getenv("DUCKIETOWN_MAXSPEED", 0.7))
         print("running with max speed:", self.max_speed)
         ctrl_class, ctrl_queue = make_async_controller(Process)
         self.queue = ctrl_queue(2)
