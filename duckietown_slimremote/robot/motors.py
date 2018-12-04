@@ -1,7 +1,7 @@
 import queue
 import time
 from multiprocessing import Process
-
+import numpy as np
 from Adafruit_MotorHAT import Adafruit_MotorHAT
 
 from duckietown_slimremote.helpers import get_right_queue
@@ -214,6 +214,8 @@ class FailsafeController:
             except queue.Empty:  # this is independent of queue type
                 pass  # this happens sometimes, no bad consequence
 
+        action = np.clip(action, -1, 1)
+        action = [-action[1],action[0]] # because of the wiring, this is weird
         self.queue.put(action)
         time.sleep(0.01)  # this is to block flooding
 
