@@ -215,7 +215,7 @@ class FailsafeController:
                 pass  # this happens sometimes, no bad consequence
 
         action = np.clip(action, -1, 1)
-        action = [-action[1],action[0]] # because of the wiring, this is weird
+        action = [action[1],action[0]] # because of the wiring, this is weird
         self.queue.put(action)
         time.sleep(0.01)  # this is to block flooding
 
