@@ -25,7 +25,7 @@ robot.step([0, 0], with_observation=False)  # init socket if it isn't
 print("straight")
 start = time.time()
 while time.time() - start < 1:
-    _ = robot.step([.2, .2], with_observation=False)
+    _ = robot.step([1, 1], with_observation=False)
     obs, rew, done, misc = robot.observe()
     time.sleep(1 / FPS)
 
@@ -36,6 +36,6 @@ time.sleep(1)
 print("left forward")
 start = time.time()
 while time.time() - start < 1:
-    _ = robot.step([.2, .5], with_observation=False)
+    _ = robot.step([.5, 1], with_observation=False)
     obs, rew, done, misc = robot.observe()
     time.sleep(1 / FPS)
