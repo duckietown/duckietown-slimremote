@@ -104,3 +104,4 @@ def scale_img(img, res=(640,480)):
     import cv2
     img = cv2.resize(img, res, interpolation=cv2.INTER_LINEAR)
     return img
+

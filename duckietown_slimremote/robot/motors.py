@@ -1,3 +1,4 @@
+import os
 import queue
 import time
 from multiprocessing import Process
@@ -198,6 +199,8 @@ class FailsafeController:
     """
 
     def __init__(self):
+        self.max_speed = os.getenv("DUCKIETOWN_MAXSPEED", 0.7)
+        print("running with max speed:", self.max_speed)
         ctrl_class, ctrl_queue = make_async_controller(Process)
         self.queue = ctrl_queue(2)
 
@@ -214,8 +217,8 @@ class FailsafeController:
             except queue.Empty:  # this is independent of queue type
                 pass  # this happens sometimes, no bad consequence
 
-        action = np.clip(action, -1, 1)
-        action = [action[1],action[0]] # because of the wiring, this is weird
+        action = np.clip(action, -1, 1) * self.max_speed
+        action = [-action[1], -action[0]]  # because of the wiring, this is weird
         self.queue.put(action)
         time.sleep(0.01)  # this is to block flooding
 
