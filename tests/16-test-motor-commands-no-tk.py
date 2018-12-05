@@ -39,3 +39,5 @@ while time.time() - start < 1:
     _ = robot.step([.4, .7], with_observation=False)
     obs, rew, done, misc = robot.observe()
     time.sleep(1 / FPS)
+
+robot.step([0,0])

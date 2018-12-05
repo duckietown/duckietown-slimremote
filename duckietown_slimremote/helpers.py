@@ -94,10 +94,10 @@ class Frame(object):
         return self.obs, self.rew, self.done, self.misc
 
 
-def string_convert(input):
+def string_convert(input_):
     if int(sys.version[0]) == 2:
-        return input.encode("ascii", 'ignore')
-    return input.encode()
+        return input_.encode("ascii", 'ignore')
+    return input_.encode()
 
 
 def scale_img(img, res=(640,480)):
