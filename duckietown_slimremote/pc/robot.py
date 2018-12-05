@@ -14,7 +14,7 @@ from duckietown_slimremote.pc.camera import SubCameraMaster
 
 
 class RemoteRobot:
-    def __init__(self, host, shape=(640, 480, 3), dtype=np.uint8, silent=False):
+    def __init__(self, host, shape=(480, 640, 3), dtype=np.uint8, silent=False):
         logger.info('Slimremote trying to connect to "{}"'.format(host))
         reachable = host_is_reachable(host)
         logger.info("'ping' reports host is " + ("REACHABLE" if reachable else "NOT reachable"))
@@ -111,7 +111,7 @@ class RemoteRobot:
 
 
 class KeyboardControlledRobot:
-    def __init__(self, host, fps=15, shape=(640, 480, 3), dtype=np.uint8):
+    def __init__(self, host, fps=15, shape=(480, 640, 3), dtype=np.uint8):
 
         # this is a bit nasty, but we only need to import this when the keyboard controller is needed
         import tkinter
