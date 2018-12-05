@@ -1,6 +1,6 @@
 import time
 from math import ceil
-
+from importlib import import_module
 import numpy as np
 
 from duckietown_slimremote import logger
@@ -114,27 +114,28 @@ class KeyboardControlledRobot:
     def __init__(self, host, fps=15, shape=(640, 480, 3), dtype=np.uint8):
 
         # this is a bit nasty, but we only need to import this when the keyboard controller is needed
-        import tkinter
-        from PIL import ImageTk, Image
+        self.tkinter = import_module("tkinter")
+        self.ImageTk = import_module("PIL.ImageTk")
+        self.Image = import_module("PIL.Image")
 
         self.robot = RemoteRobot(host, shape, dtype)
 
-        self.rootwindow = tkinter.Tk()
+        self.rootwindow = self.tkinter.Tk()
 
         self.history = []
 
         self.last_obs = None
 
-        frame = tkinter.Frame(self.rootwindow, width=1, height=1)
+        frame = self.tkinter.Frame(self.rootwindow, width=1, height=1)
         frame.bind("<KeyPress>", self.keydown)
         frame.bind("<KeyRelease>", self.keyup)
         frame.pack()
 
         # Creates a Tkinter-compatible photo image, which can be used everywhere Tkinter expects an image object.
 
-        im = Image.fromarray(np.zeros(shape, dtype=dtype))
-        self.img = ImageTk.PhotoImage(im)
-        self.panel = tkinter.Label(self.rootwindow, image=self.img)
+        im = self.Image.fromarray(np.zeros(shape, dtype=dtype))
+        self.img = self.ImageTk.PhotoImage(im)
+        self.panel = self.tkinter.Label(self.rootwindow, image=self.img)
 
         # The Pack geometry manager packs widgets in rows or columns.
         self.panel.pack(side="bottom", fill="both", expand="yes")
@@ -151,7 +152,7 @@ class KeyboardControlledRobot:
         self.rootwindow.after(int(ceil(1000 / self.fps)), self.updateImg)
         obs, rew, done, misc = self.robot.observe()
         if obs is not None and np.count_nonzero(obs) > 0:
-            img2 = ImageTk.PhotoImage(Image.fromarray(obs))
+            img2 = self.ImageTk.PhotoImage(self.Image.fromarray(obs))
             self.panel.configure(image=img2)
             self.panel.image = img2
             # if not (self.last_obs == obs).all():
