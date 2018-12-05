@@ -1,13 +1,16 @@
-import os
+# The gamepad/"joystick"-related stuff in here is mostly from https://gist.github.com/rdb/8864666. Huge thanks to @rdb
+
 import queue
 import time
 from multiprocessing import Process
 import numpy as np
 from Adafruit_MotorHAT import Adafruit_MotorHAT
+import os, struct, array
+from fcntl import ioctl
 
 from duckietown_slimremote.helpers import get_right_queue
 from duckietown_slimremote.robot.constants import MOTOR_MAX_SPEED, DECELERATION_TIMEOUT, DECELERATION_BREAK_TIME, \
-    DECELERATION_STEPS
+    DECELERATION_STEPS, JOYSTICK_PATH, CHECK_JOYSTICK_EVERY_N, JOYSTICK_AXIS_NAMES, JOYSTICK_BUTTON_NAMES
 from duckietown_slimremote.robot.led import RGB_LED
 
 
@@ -149,42 +152,130 @@ def make_async_controller(base):
             self.robot = Controller()
             self.last_action_time = time.time()
             self.last_action = []
+            self.joystick = None
+            self.button_map = []
+            self.button_states = {}
+            self.axis_map = []
+            self.axis_states = {}
+            self.halt = False
+
+        def get_button_map(self):
+            buf = array.array('B', [0])
+            ioctl(self.joystick, 0x80016a12, buf)  # JSIOCGBUTTONS
+            num_buttons = buf[0]
+
+            buf = array.array('H', [0] * 200)
+            ioctl(self.joystick, 0x80406a34, buf)  # JSIOCGBTNMAP
+
+            for btn in buf[:num_buttons]:
+                btn_name = JOYSTICK_BUTTON_NAMES.get(btn, 'unknown(0x%03x)' % btn)
+                self.button_map.append(btn_name)
+                self.button_states[btn_name] = 0
+
+        def get_axis_map(self):
+            buf = array.array('B', [0])
+            ioctl(self.joystick, 0x80016a11, buf)  # JSIOCGAXES
+            num_axes = buf[0]
+
+            buf = array.array('B', [0] * 0x40)
+            ioctl(self.joystick, 0x80406a32, buf)  # JSIOCGAXMAP
+
+            for axis in buf[:num_axes]:
+                axis_name = JOYSTICK_AXIS_NAMES.get(axis, 'unknown(0x%02x)' % axis)
+                self.axis_map.append(axis_name)
+                self.axis_states[axis_name] = 0.0
+
+        def handle_joystick(self):
+            try:
+                evbuf = self.joystick.read(8)
+                if evbuf:
+                    time, value, type, number = struct.unpack('IhBB', evbuf)
+                    if type & 0x80:
+                        pass  # init
+
+                    if type & 0x01:
+                        button = self.button_map[number]
+                        if button:
+                            self.button_states[button] = value
+                            # if value:
+                            #     print("{} pressed".format(button))
+                            # else:
+                            #     print("{} released".format(button))
+                            if button == "mode" and value:
+                                self.halt = not self.halt
+                                if self.halt:
+                                    print("=== HALT ===")
+
+                    if type & 0x02:
+                        axis = self.axis_map[number]
+                        if axis:
+                            fvalue = value / 32767.0
+                            self.axis_states[axis] = fvalue
+                            print("{}: {}".format(axis, round(fvalue * 100) / 100))
+            except OSError:
+                self.joystick = None
 
         def run(self):
             keep_running = True
+            joystick_check_counter = 0
             while keep_running:
-                if not self.queue.empty():
-                    action = self.queue.get()
 
-                    if action == "quit":
-                        keep_running = False
-                        self.robot.list_action([0, 0])
-                        self.robot.rgb_off()
-                    else:
-                        act = self.robot.list_action(action[:2])
-                        if len(action) == 5:
-                            self.robot.rgb_action(action[2:])
+                # check and see if a new joystick was connected
+                if self.joystick is None and joystick_check_counter == 0:
+                    try:
+                        os.stat(JOYSTICK_PATH)
+                        # this next line doesn't get executed if the joystick isn't found
+                        self.joystick = open(JOYSTICK_PATH, 'rb')
+                        print("found joystick")
+                        if len(self.axis_map) == 0:
+                            self.get_axis_map()
+                            self.get_button_map()
+                    except OSError:
+                        pass  # no joystick found
 
-                        self.last_action_time = time.time()
-                        self.last_action = act
+                if self.joystick is not None:
+                    self.handle_joystick()
 
+                joystick_check_counter += 1
+                if joystick_check_counter >= CHECK_JOYSTICK_EVERY_N:
+                    joystick_check_counter = 0
+
+                if self.halt:
+                    self.robot.list_action([0, 0])
+                    self.robot.rgb_off()
                 else:
-                    # check if it's time to break
-                    delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
+                    if not self.queue.empty():
+                        action = self.queue.get()
 
-                    if 0 <= delta < DECELERATION_BREAK_TIME:
-                        # decelerate
-                        if len(self.last_action) == 2:
-                            new_action = ease_out_action(self.last_action, delta)
-                            self.robot.list_action(new_action)
+                        if action == "quit":
+                            keep_running = False
+                            self.robot.list_action([0, 0])
+                            self.robot.rgb_off()
+                        else:
+                            act = self.robot.list_action(action[:2])
+                            if len(action) == 5:
+                                self.robot.rgb_action(action[2:])
 
-                            time.sleep(1 / DECELERATION_STEPS)
-                    elif delta >= DECELERATION_BREAK_TIME and len(self.last_action) == 2:
-                        # this is run only once after decel to
-                        # make sure the robot comes to a full stop
-                        # and doesn't continue to move at 0.00001 speed
-                        self.last_action = []
-                        self.robot.stop()
+                            self.last_action_time = time.time()
+                            self.last_action = act
+
+                    else:
+                        # check if it's time to break
+                        delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
+
+                        if 0 <= delta < DECELERATION_BREAK_TIME:
+                            # decelerate
+                            if len(self.last_action) == 2:
+                                new_action = ease_out_action(self.last_action, delta)
+                                self.robot.list_action(new_action)
+
+                                time.sleep(1 / DECELERATION_STEPS)
+                        elif delta >= DECELERATION_BREAK_TIME and len(self.last_action) == 2:
+                            # this is run only once after decel to
+                            # make sure the robot comes to a full stop
+                            # and doesn't continue to move at 0.00001 speed
+                            self.last_action = []
+                            self.robot.stop()
 
     queue = get_right_queue(base)
 
