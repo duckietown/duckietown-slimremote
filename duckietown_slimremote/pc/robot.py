@@ -2,7 +2,6 @@ import time
 from math import ceil
 
 import numpy as np
-from PIL import ImageTk, Image
 
 from duckietown_slimremote import logger
 from duckietown_slimremote.helpers import random_id

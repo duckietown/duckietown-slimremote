@@ -26,8 +26,11 @@ Launch the `slimremote` container
     
 And when this is done, just run the container:
 
-    docker run -it -p 5558:5558 -p 8902:8902 --privileged fgolemo/duckietown-slimremote:testing
+    docker run -it -p 5558:5558 -p 8902:8902 --privileged \ 
+    -e DUCKIETOWN_MAXSPEED=0.5 fgolemo/duckietown-slimremote:testing
     
+Where `DUCKIETOWN_MAXSPEED` is ... the maximum speed at which the motors will go (in range `[0;1]`.
+
 This will keep the slimremote running in your terminal. The robot is now ready for incomming connections. Open a new terminal/tab.
 
 Just to be sure, this should output (among some other things):
