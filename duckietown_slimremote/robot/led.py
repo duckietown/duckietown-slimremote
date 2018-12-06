@@ -16,7 +16,10 @@ class RGB_LED:
             self.pwm.setPWM(i, 0, 4095)
 
     def setLEDBrightness(self, led, offset, brightness):
-        self.pwm.setPWM(3 * led + offset, brightness << 4, 4095)
+        try:
+            self.pwm.setPWM(3 * led + offset, brightness << 4, 4095)
+        except OSError:
+            print ("couldn't set LEDs - OSError")
 
     def setRGBint24(self, led, color):
         r = color >> 16 & 0xFF

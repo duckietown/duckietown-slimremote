@@ -164,6 +164,7 @@ class KeyboardControlledRobot:
         return
 
     def keyup(self, e):
+        print("key up:", e.keycode)
         if e.keycode in self.history:
             self.history.pop(self.history.index(e.keycode))
 
@@ -177,6 +178,7 @@ class KeyboardControlledRobot:
             self.robot.reset()
 
     def keydown(self, e):
+        print("key down:", e.keycode)
         if not e.keycode in self.history:
             self.history.append(e.keycode)
 

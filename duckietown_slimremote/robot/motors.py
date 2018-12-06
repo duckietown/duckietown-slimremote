@@ -187,7 +187,7 @@ def make_async_controller(base):
 
         def handle_joystick(self):
             try:
-                evbuf = self.joystick.read(8)
+                evbuf = os.read(self.joystick, 8)
                 if evbuf:
                     time, value, type, number = struct.unpack('IhBB', evbuf)
                     if type & 0x80:
@@ -205,15 +205,20 @@ def make_async_controller(base):
                                 self.halt = not self.halt
                                 if self.halt:
                                     print("=== HALT ===")
+                                else:
+                                    print("=== UN-HALT ===")
 
                     if type & 0x02:
                         axis = self.axis_map[number]
                         if axis:
                             fvalue = value / 32767.0
                             self.axis_states[axis] = fvalue
-                            print("{}: {}".format(axis, round(fvalue * 100) / 100))
+                            # print("{}: {}".format(axis, round(fvalue * 100) / 100))
+            except BlockingIOError:
+                pass  # this is fine
             except OSError:
-                self.joystick = None
+                self.joystick = None  # disconnect
+                print("joystick disconnected")
 
         def run(self):
             keep_running = True
@@ -225,7 +230,7 @@ def make_async_controller(base):
                     try:
                         os.stat(JOYSTICK_PATH)
                         # this next line doesn't get executed if the joystick isn't found
-                        self.joystick = open(JOYSTICK_PATH, 'rb')
+                        self.joystick = os.open(JOYSTICK_PATH, os.O_RDONLY | os.O_NONBLOCK)
                         print("found joystick")
                         if len(self.axis_map) == 0:
                             self.get_axis_map()
@@ -240,17 +245,16 @@ def make_async_controller(base):
                 if joystick_check_counter >= CHECK_JOYSTICK_EVERY_N:
                     joystick_check_counter = 0
 
-                if self.halt:
-                    self.robot.list_action([0, 0])
-                    self.robot.rgb_off()
-                else:
-                    if not self.queue.empty():
-                        action = self.queue.get()
+                if not self.queue.empty():
+                    action = self.queue.get()
 
-                        if action == "quit":
-                            keep_running = False
-                            self.robot.list_action([0, 0])
-                            self.robot.rgb_off()
+                    if action == "quit":
+                        keep_running = False
+                        self.robot.list_action([0, 0])
+                        self.robot.rgb_off()
+                    else:
+                        if self.halt:
+                            self.robot.stop()
                         else:
                             act = self.robot.list_action(action[:2])
                             if len(action) == 5:
@@ -259,7 +263,11 @@ def make_async_controller(base):
                             self.last_action_time = time.time()
                             self.last_action = act
 
+                else:
+                    if self.halt:
+                        self.robot.stop()
                     else:
+
                         # check if it's time to break
                         delta = time.time() - self.last_action_time - DECELERATION_TIMEOUT
 
