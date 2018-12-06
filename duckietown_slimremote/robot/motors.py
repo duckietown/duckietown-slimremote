@@ -10,7 +10,7 @@ from fcntl import ioctl
 
 from duckietown_slimremote.helpers import get_right_queue
 from duckietown_slimremote.robot.constants import MOTOR_MAX_SPEED, DECELERATION_TIMEOUT, DECELERATION_BREAK_TIME, \
-    DECELERATION_STEPS, JOYSTICK_PATH, CHECK_JOYSTICK_EVERY_N, JOYSTICK_AXIS_NAMES, JOYSTICK_BUTTON_NAMES
+    DECELERATION_STEPS, JOYSTICK_PATH, CHECK_JOYSTICK_EVERY_N, JOYSTICK_AXIS_NAMES, JOYSTICK_BUTTON_NAMES, IK
 from duckietown_slimremote.robot.led import RGB_LED
 
 
@@ -159,6 +159,7 @@ def make_async_controller(base):
             self.axis_map = []
             self.axis_states = {}
             self.halt = False
+            self.joystick_cmd = np.zeros(2,dtype=np.float32)
 
         def get_button_map(self):
             buf = array.array('B', [0])
@@ -185,6 +186,27 @@ def make_async_controller(base):
                 axis_name = JOYSTICK_AXIS_NAMES.get(axis, 'unknown(0x%02x)' % axis)
                 self.axis_map.append(axis_name)
                 self.axis_states[axis_name] = 0.0
+
+        def ik(self):
+            vel = self.axis_states["y"]
+            angle = - self.axis_states["x"]
+            k_r = IK["k"]
+            k_l = IK["k"]
+
+            k_r_inv = (IK["gain"] + IK["trim"]) / k_r
+            k_l_inv = (IK["gain"] - IK["trim"]) / k_l
+
+            omega_r = (vel + 0.5 * angle * IK["wheel_dist"]) / IK["radius"]
+            omega_l = (vel - 0.5 * angle * IK["wheel_dist"]) / IK["radius"]
+
+            out = [omega_l * k_l_inv, omega_r * k_r_inv]
+            self.joystick_cmd = np.clip(out, -IK["limit"], IK["limit"])
+
+            # cutoff if joystick near resting position
+            if (np.abs(self.joystick_cmd) < IK["epsilon"]).all():
+                self.joystick_cmd[0] = 0
+                self.joystick_cmd[1] = 0
+
 
         def handle_joystick(self):
             try:
@@ -214,6 +236,7 @@ def make_async_controller(base):
                         if axis:
                             fvalue = value / 32767.0
                             self.axis_states[axis] = fvalue
+                            self.ik()
                             # print("{}: {}".format(axis, round(fvalue * 100) / 100))
             except BlockingIOError:
                 pass  # this is fine
@@ -248,11 +271,12 @@ def make_async_controller(base):
 
                 if not self.queue.empty():
                     action = self.queue.get()
+                    if self.joystick_cmd[0] != 0 and self.joystick_cmd[1] != 0:
+                        action = self.joystick_cmd[0]
 
                     if action == "quit":
                         keep_running = False
-                        self.robot.list_action([0, 0])
-                        self.robot.rgb_off()
+                        self.robot.stop()
                     else:
                         if self.halt:
                             self.robot.stop()
@@ -267,6 +291,10 @@ def make_async_controller(base):
                 else:
                     if self.halt:
                         self.robot.stop()
+                    elif self.joystick_cmd[0] != 0 and self.joystick_cmd[1] != 0:
+                        self.robot.list_action(self.joystick_cmd)
+                        self.last_action_time = time.time()
+                        self.last_action = self.joystick_cmd
                     else:
 
                         # check if it's time to break

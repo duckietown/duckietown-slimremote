@@ -103,3 +103,13 @@ JOYSTICK_BUTTON_NAMES = {
     0x2c2: 'dpad_up',
     0x2c3: 'dpad_down',
 }
+
+IK = {
+    "gain": 1.0,
+    "trim": 0.0,
+    "radius": 0.0318,
+    "k": 27.0,
+    "limit": 1.0,
+    "wheel_dist": 0.102,
+    "epsilon": 0.1
+}
