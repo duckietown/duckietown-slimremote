@@ -1,7 +1,7 @@
 import sys
 from duckietown_slimremote.pc.robot import KeyboardControlledRobot
 
-host = "duckmylife3.local"
+# host = "duckmylife3.local"
 
 if len(sys.argv) > 1:
     host = sys.argv[1]
