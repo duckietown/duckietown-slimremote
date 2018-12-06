@@ -1,7 +1,7 @@
 # The gamepad/"joystick"-related stuff in here is mostly from https://gist.github.com/rdb/8864666. Huge thanks to @rdb
 
 import queue
-import time
+import time # don't remove this
 from multiprocessing import Process
 import numpy as np
 from Adafruit_MotorHAT import Adafruit_MotorHAT
@@ -152,6 +152,7 @@ def make_async_controller(base):
             self.robot = Controller()
             self.last_action_time = time.time()
             self.last_action = []
+
             self.joystick = None
             self.button_map = []
             self.button_states = {}
