@@ -78,8 +78,8 @@ class RemoteRobot:
         def not_ready():
             return np.count_nonzero(obs) == 0
 
-        ncounts = 5
-        wait = 1
+        ncounts = 500
+        wait = 0.01
         while not_ready():
             # then the simulator probably wasn't ready
             # and we send the action again
