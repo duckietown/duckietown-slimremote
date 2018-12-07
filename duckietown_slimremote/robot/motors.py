@@ -1,7 +1,7 @@
 # The gamepad/"joystick"-related stuff in here is mostly from https://gist.github.com/rdb/8864666. Huge thanks to @rdb
 
 import queue
-import time # don't remove this
+import time  # don't remove this
 from multiprocessing import Process
 import numpy as np
 from Adafruit_MotorHAT import Adafruit_MotorHAT
@@ -159,7 +159,7 @@ def make_async_controller(base):
             self.axis_map = []
             self.axis_states = {}
             self.halt = False
-            self.joystick_cmd = np.zeros(2,dtype=np.float32)
+            self.joystick_cmd = np.zeros(2, dtype=np.float32)
 
         def get_button_map(self):
             buf = array.array('B', [0])
@@ -207,6 +207,27 @@ def make_async_controller(base):
                 self.joystick_cmd[0] = 0
                 self.joystick_cmd[1] = 0
 
+        def shitty_ik(self):
+            vel = self.axis_states["y"] * .8
+            angle = -self.axis_states["x"] * .8
+
+            out = np.array([np.sign(vel), np.sign(vel)])
+            angle_idx = 0
+            if angle > 0:
+                angle_idx = 1
+            angle_sub = np.abs(angle)
+            out[angle_idx] -= np.sign(vel) * np.abs(angle) * angle_sub
+            out[1 - angle_idx] += np.sign(vel) * np.abs(angle) * angle_sub / 2
+            out *= np.abs(vel)
+
+            out = np.clip(out, -1, 1)
+
+            # cutoff if joystick near resting position
+            if (np.abs(out) < 0.1).all():
+                out = np.array([0, 0])
+
+            self.joystick_cmd[0] = out[0]
+            self.joystick_cmd[1] = out[1]
 
         def handle_joystick(self):
             try:
@@ -236,7 +257,7 @@ def make_async_controller(base):
                         if axis:
                             fvalue = value / 32767.0
                             self.axis_states[axis] = fvalue
-                            self.ik()
+                            self.shitty_ik()
                             # print("{}: {}".format(axis, round(fvalue * 100) / 100))
             except BlockingIOError:
                 pass  # this is fine
