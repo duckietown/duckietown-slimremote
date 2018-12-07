@@ -104,6 +104,6 @@ def scale_img(img, res=(480,640)):
     import PIL
 
     img = PIL.Image.fromarray(img)
-    img.resize((res[1], res[0]), PIL.Image.BILINEAR)
+    img = img.resize((res[1], res[0]), PIL.Image.BILINEAR)
     return np.array(img)
 
